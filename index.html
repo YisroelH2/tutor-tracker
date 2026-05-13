@@ -4,6 +4,11 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tutor Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Tutor Tracker"/>
+  <meta name="theme-color" content="#0d1117"/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -20,9 +25,21 @@
 <div id="root"></div>
 
 <!-- 
- <script>
-  //https://script.google.com/macros/s/AKfycbwcqAmlGwxS6desgje5VHjxipyvGcQvLPiQFudTxCMvaa2hgYug7lSGXjN4UXIk6YyY/exec:
-  window.SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwcqAmlGwxS6desgje5VHjxipyvGcQvLPiQFudTxCMvaa2hgYug7lSGXjN4UXIk6YyY/exec";
+  =====================================================================
+  GOOGLE SHEETS SYNC SETUP
+  =====================================================================
+  1. Open your Google Sheet
+  2. Click Extensions > Apps Script
+  3. Paste the Apps Script code from apps-script.gs into the editor
+  4. Click Deploy > New Deployment > Web App
+  5. Set "Who has access" to "Anyone"
+  6. Copy the Web App URL
+  7. Paste it below where it says PASTE_YOUR_WEB_APP_URL_HERE
+  =====================================================================
+-->
+<script>
+  // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
+  window.SHEETS_WEBHOOK_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
 </script>
 
 <script type="text/babel">
@@ -32,8 +49,8 @@ const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const COLORS = ["#4f9cf9","#f97b4f","#a78bfa","#34d399","#f472b6","#fbbf24","#60a5fa"];
 
 const DEFAULT_STUDENTS = [
-  { id:"s1", name:"Shnaur Zalmen Tal", color:"#4f9cf9", scheduledDays:[], rate:15 },
-  { id:"s2", name:"Pinchas Tal",        color:"#f97b4f", scheduledDays:[], rate:15 },
+  { id:"s1", name:"Shnaur Zalmen Tal", color:"#4f9cf9", scheduledDays:[], rate:30 },
+  { id:"s2", name:"Pinchas Tal",        color:"#f97b4f", scheduledDays:[], rate:30 },
 ];
 
 // ── Storage (localStorage for hosted version) ──────────────────────────────
@@ -68,12 +85,11 @@ const syncToSheets = async (session, studentName, action="log") => {
   const url = window.SHEETS_WEBHOOK_URL;
   if (!url || url==="PASTE_YOUR_WEB_APP_URL_HERE") return;
   try {
-    await fetch(url, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ action, session:{ ...session, studentName } }),
+    const params = new URLSearchParams({
+      action,
+      payload: JSON.stringify({ action, session:{ ...session, studentName } })
     });
+    await fetch(`${url}?${params.toString()}`, { method:"GET", mode:"no-cors" });
   } catch(e) { console.warn("Sheets sync failed:", e); }
 };
 

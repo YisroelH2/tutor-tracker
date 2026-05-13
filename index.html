@@ -20,20 +20,8 @@
 <div id="root"></div>
 
 <!-- 
-  =====================================================================
-  GOOGLE SHEETS SYNC SETUP
-  =====================================================================
-  1. Open your Google Sheet
-  2. Click Extensions > Apps Script
-  3. Paste the Apps Script code from apps-script.gs into the editor
-  4. Click Deploy > New Deployment > Web App
-  5. Set "Who has access" to "Anyone"
-  6. Copy the Web App URL
-  7. Paste it below where it says PASTE_YOUR_WEB_APP_URL_HERE
-  =====================================================================
--->
-<script>
-  // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
+ <script>
+  //https://script.google.com/macros/s/AKfycbwcqAmlGwxS6desgje5VHjxipyvGcQvLPiQFudTxCMvaa2hgYug7lSGXjN4UXIk6YyY/exec:
   window.SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwcqAmlGwxS6desgje5VHjxipyvGcQvLPiQFudTxCMvaa2hgYug7lSGXjN4UXIk6YyY/exec";
 </script>
 
@@ -44,8 +32,8 @@ const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const COLORS = ["#4f9cf9","#f97b4f","#a78bfa","#34d399","#f472b6","#fbbf24","#60a5fa"];
 
 const DEFAULT_STUDENTS = [
-  { id:"s1", name:"Shnaur Zalmen Tal", color:"#4f9cf9", scheduledDays:[], rate:30 },
-  { id:"s2", name:"Pinchas Tal",        color:"#f97b4f", scheduledDays:[], rate:30 },
+  { id:"s1", name:"Shnaur Zalmen Tal", color:"#4f9cf9", scheduledDays:[], rate:15 },
+  { id:"s2", name:"Pinchas Tal",        color:"#f97b4f", scheduledDays:[], rate:15 },
 ];
 
 // ── Storage (localStorage for hosted version) ──────────────────────────────

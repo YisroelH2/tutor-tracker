@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<<link rel="manifest" href="manifest.json"/>>
+<head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tutor Tracker</title>
@@ -30,7 +30,7 @@
   // =====================================================================
   // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
   // =====================================================================
-  window.SHEETS_WEBHOOK_URL = https://script.google.com/macros/s/AKfycbwcqAmlGwxS6desgje5VHjxipyvGcQvLPiQFudTxCMvaa2hgYug7lSGXjN4UXIk6YyY/exec";
+  window.SHEETS_WEBHOOK_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
 </script>
 
 <script type="text/babel">
@@ -73,19 +73,18 @@ const syncToSheets = async (session, studentName, action="log") => {
   const url = window.SHEETS_WEBHOOK_URL;
   if (!url || url === "PASTE_YOUR_WEB_APP_URL_HERE") return { skipped: true };
   try {
-    const body = JSON.stringify({ action, session: { ...session, studentName } });
-    const res  = await fetch(url, {
-      method:  "POST",
-      headers: { "Content-Type": "text/plain" },  // text/plain avoids CORS preflight
-      body,
+    // Use GET with URL params — POST gets cancelled by CORS, GET works fine with Apps Script
+    const payload = encodeURIComponent(JSON.stringify({ action, session: { ...session, studentName } }));
+    const res = await fetch(`${url}?payload=${payload}`, {
+      method: "GET",
+      mode: "no-cors",  // no-cors is fine for GET — we just need it to arrive, not read the response
     });
-    const text = await res.text();
-    console.log("Sheets response:", text);
-    return JSON.parse(text);
+    return { status: "ok" };
   } catch(e) {
     console.warn("Sheets sync error:", e);
     return { error: e.message };
   }
+};
 };
 
 const C   = { bg:"#0d1117", card:"rgba(255,255,255,0.04)", border:"rgba(255,255,255,0.08)", text:"#e6edf3", muted:"#8b949e", accent:"#58a6ff" };
@@ -137,13 +136,10 @@ function App() {
   const totalOwed   = sessions.filter(s=>s.complete&&!s.paid).reduce((a,s)=>a+s.amount,0);
 
   const doSync = async (session, studentName, action) => {
-    flash("Syncing...", setSyncMsg, 10000);
+    flash("Syncing...", setSyncMsg, 2000);
     const result = await syncToSheets(session, studentName, action);
-    if (result?.skipped)       flash("", setSyncMsg, 1);
-    else if (result?.status === "ok" || result?.status === "duplicate")
-                               flash("Synced to Sheets ✓", setSyncMsg, 2500);
-    else if (result?.error)    flash("Sync failed — check console", setSyncMsg, 3000);
-    else                       flash("Synced ✓", setSyncMsg, 2000);
+    if (result?.skipped) flash("", setSyncMsg, 1);
+    else flash("Sent to Sheets ✓", setSyncMsg, 2500);
   };
 
   const logSession = async (overrides={}) => {

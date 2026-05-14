@@ -39,54 +39,34 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event: network first, fallback to cache
+// Fetch event: network first for APIs, cache first for static assets
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
-  // Network first for external APIs (Apps Script)
+  // Network first for Apps Script
   if (event.request.url.includes('script.google.com')) {
     event.respondWith(
       fetch(event.request)
-        .catch(() => {
-          // If network fails, return a placeholder response
-          return new Response(JSON.stringify({ error: 'offline' }), {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: new Headers({ 'Content-Type': 'application/json' }),
-          });
-        })
+        .catch(() => new Response(JSON.stringify({ error: 'offline' }), {
+          status: 503,
+          headers: new Headers({ 'Content-Type': 'application/json' }),
+        }))
     );
     return;
   }
 
-  // Cache first for everything else
+  // Cache first for static assets
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
         return response || fetch(event.request)
           .then((response) => {
-            // Cache successful responses
-            if (!response || response.status !== 200 || response.type === 'error') {
-              return response;
-            }
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
+            if (!response || response.status !== 200) return response;
+            const cloned = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
             return response;
           })
-          .catch(() => {
-            // Return cached response or a fallback
-            return caches.match(event.request)
-              .then((cachedResponse) => {
-                return cachedResponse || new Response('Offline - resource not available', {
-                  status: 503,
-                  statusText: 'Service Unavailable',
-                });
-              });
-          });
+          .catch(() => new Response('Offline - resource not available', { status: 503 }));
       })
   );
 });

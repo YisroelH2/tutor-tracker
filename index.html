@@ -17,6 +17,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0d1117; color: #e6edf3; font-family: 'Nunito', sans-serif; }
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+    input[type="color"] { width: 50px; height: 40px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; cursor: pointer; }
     select option { background: #21262d; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #0d1117; }
@@ -100,7 +101,7 @@ function App() {
   const [form,           setForm]           = useState({studentId:"s1",date:todayStr(),notes:"",complete:true});
   const [editingStudent, setEditingStudent] = useState(null);
   const [showAddStudent, setShowAddStudent] = useState(false);
-  const [newStudent,     setNewStudent]     = useState({name:"",rate:30,scheduledDays:[]});
+  const [newStudent,     setNewStudent]     = useState({name:"",rate:30,color:COLORS[0],scheduledDays:[]});
   const [filterStudent,  setFilterStudent]  = useState("all");
   const [filterPaid,     setFilterPaid]     = useState("all");
   const [showBulk,       setShowBulk]       = useState(false);
@@ -174,7 +175,7 @@ function App() {
   const saveEditStudent = () => {
     if (!editingStudent) return;
     const u = students.map(st => st.id===editingStudent.id
-      ? {...st, name:editingStudent.name, rate:Number(editingStudent.rate), scheduledDays:editingStudent.scheduledDays}
+      ? {...st, name:editingStudent.name, rate:Number(editingStudent.rate), color:editingStudent.color, scheduledDays:editingStudent.scheduledDays}
       : st);
     persist(null, u); setEditingStudent(null);
   };
@@ -186,9 +187,9 @@ function App() {
 
   const addStudent = () => {
     if (!newStudent.name.trim()) return;
-    const ns = { id:Date.now().toString(), name:newStudent.name.trim(), color:COLORS[students.length%COLORS.length], rate:Number(newStudent.rate)||30, scheduledDays:newStudent.scheduledDays };
+    const ns = { id:Date.now().toString(), name:newStudent.name.trim(), color:newStudent.color, rate:Number(newStudent.rate)||30, scheduledDays:newStudent.scheduledDays };
     persist(null, [...students, ns]);
-    setNewStudent({name:"",rate:30,scheduledDays:[]}); setShowAddStudent(false);
+    setNewStudent({name:"",rate:30,color:COLORS[0],scheduledDays:[]}); setShowAddStudent(false);
   };
 
   const toggleDay = (dayIdx, obj, setter) => {
@@ -435,11 +436,18 @@ function App() {
                     <input type="number" value={editingStudent.rate} onChange={e=>setEditingStudent(s=>({...s,rate:e.target.value}))} style={{...INP(),width:"120px"}}/>
                   </div>
                   <div style={{marginBottom:"14px"}}>
+                    <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>COLOR</label>
+                    <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
+                      <input type="color" value={editingStudent.color} onChange={e=>setEditingStudent(s=>({...s,color:e.target.value}))} style={{width:"50px",height:"40px"}}/>
+                      <span style={{fontSize:"12px",fontFamily:"'DM Mono',monospace",color:editingStudent.color}}>{editingStudent.color}</span>
+                    </div>
+                  </div>
+                  <div style={{marginBottom:"14px"}}>
                     <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"8px"}}>SCHEDULED DAYS</label>
                     <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
                       {DAY_NAMES.map((d,i)=>{
                         const active=editingStudent.scheduledDays?.includes(i);
-                        return<button key={i} onClick={()=>toggleDay(i,editingStudent,setEditingStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?st.color:C.border}`,background:active?`${st.color}22`:"transparent",color:active?st.color:C.muted,fontWeight:600,cursor:"pointer"}}>{d}</button>;
+                        return<button key={i} onClick={()=>toggleDay(i,editingStudent,setEditingStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?editingStudent.color:C.border}`,background:active?`${editingStudent.color}22`:"transparent",color:active?editingStudent.color:C.muted,fontWeight:600,cursor:"pointer"}}>{d}</button>;
                       })}
                     </div>
                     <div style={{color:C.muted,fontSize:"11px",marginTop:"6px",fontFamily:"'DM Mono',monospace"}}>Leave empty to hide day suggestions</div>
@@ -490,11 +498,18 @@ function App() {
                 <input type="number" value={newStudent.rate} onChange={e=>setNewStudent(s=>({...s,rate:e.target.value}))} style={{...INP(),width:"120px"}}/>
               </div>
               <div style={{marginBottom:"14px"}}>
+                <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>COLOR</label>
+                <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
+                  <input type="color" value={newStudent.color} onChange={e=>setNewStudent(s=>({...s,color:e.target.value}))} style={{width:"50px",height:"40px"}}/>
+                  <span style={{fontSize:"12px",fontFamily:"'DM Mono',monospace",color:newStudent.color}}>{newStudent.color}</span>
+                </div>
+              </div>
+              <div style={{marginBottom:"14px"}}>
                 <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"8px"}}>SCHEDULED DAYS</label>
                 <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
                   {DAY_NAMES.map((d,i)=>{
                     const active=newStudent.scheduledDays?.includes(i);
-                    return<button key={i} onClick={()=>toggleDay(i,newStudent,setNewStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?C.accent:C.border}`,background:active?"rgba(88,166,255,0.2)":"transparent",color:active?C.accent:C.muted,fontWeight:600,cursor:"pointer"}}>{d}</button>;
+                    return<button key={i} onClick={()=>toggleDay(i,newStudent,setNewStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?newStudent.color:C.border}`,background:active?`${newStudent.color}22`:"transparent",color:active?newStudent.color:C.muted,fontWeight:600,cursor:"pointer"}}>{d}</button>;
                   })}
                 </div>
               </div>

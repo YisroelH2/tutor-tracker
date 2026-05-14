@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Tutor Tracker"/>
   <meta name="theme-color" content="#0d1117"/>
+  <link rel="manifest" href="/manifest.json"/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -28,6 +29,17 @@
 <div id="root"></div>
 
 <script>
+  // =====================================================================
+  // SERVICE WORKER REGISTRATION (PWA Support)
+  // =====================================================================
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('✓ Service Worker registered'))
+        .catch(err => console.warn('Service Worker registration failed:', err));
+    });
+  }
+
   // =====================================================================
   // GOOGLE APPS SCRIPT WEB APP URL:
   // =====================================================================
@@ -69,6 +81,22 @@ const parseImportLine = (line) => {
   return { dateStr, complete, paid };
 };
 
+const parseSpreadsheetRow = (row, students) => {
+  const cols = row.split('\t').map(c => c.trim());
+  if (cols.length < 2) return null;
+  const [dateStr, studentName, completeStr, paidStr, amountStr, notes] = cols;
+  if (!dateStr || !studentName) return null;
+  
+  const st = students.find(s => s.name.toLowerCase() === studentName.toLowerCase());
+  if (!st) return null;
+  
+  const complete = ['true','yes','1','complete'].includes(completeStr?.toLowerCase());
+  const paid = ['true','yes','1','paid'].includes(paidStr?.toLowerCase());
+  const amount = parseFloat(amountStr) || st.rate;
+  
+  return { dateStr, studentId: st.id, complete, paid, amount, notes: notes || "" };
+};
+
 // ── Sheets sync — sends as GET with URL params ────────────────
 const syncToSheets = async (session, studentName, action="log") => {
   const url = window.SHEETS_WEBHOOK_URL;
@@ -106,6 +134,7 @@ function App() {
   const [filterPaid,     setFilterPaid]     = useState("all");
   const [showBulk,       setShowBulk]       = useState(false);
   const [bulkText,       setBulkText]       = useState("");
+  const [bulkMode,       setBulkMode]       = useState("simple");
   const [bulkStudentId,  setBulkStudentId]  = useState("");
   const [bulkResult,     setBulkResult]     = useState(null);
   const [showExport,     setShowExport]     = useState(false);
@@ -198,18 +227,37 @@ function App() {
   };
 
   const runBulkImport = () => {
-    if (!bulkStudentId) { setBulkResult({error:"Please select a student."}); return; }
-    const st = getStudent(bulkStudentId);
-    const lines = bulkText.split("\n").map(l=>l.trim()).filter(Boolean);
-    const imported=[]; const failed=[];
-    for (const line of lines) {
-      const parsed = parseImportLine(line);
-      if (!parsed) { failed.push(line); continue; }
-      if (sessions.some(s=>s.studentId===bulkStudentId&&s.date===parsed.dateStr)) { failed.push(`${line} (duplicate)`); continue; }
-      imported.push({ id:Date.now().toString()+Math.random(), studentId:bulkStudentId, date:parsed.dateStr, complete:parsed.complete, paid:parsed.paid, notes:"(imported)", amount:st.rate??30 });
+    if (bulkMode === "simple") {
+      if (!bulkStudentId) { setBulkResult({error:"Please select a student."}); return; }
+      const st = getStudent(bulkStudentId);
+      const lines = bulkText.split("\n").map(l=>l.trim()).filter(Boolean);
+      const imported=[]; const failed=[];
+      for (const line of lines) {
+        const parsed = parseImportLine(line);
+        if (!parsed) { failed.push(line); continue; }
+        if (sessions.some(s=>s.studentId===bulkStudentId&&s.date===parsed.dateStr)) { failed.push(`${line} (duplicate)`); continue; }
+        imported.push({ id:Date.now().toString()+Math.random(), studentId:bulkStudentId, date:parsed.dateStr, complete:parsed.complete, paid:parsed.paid, notes:"(imported)", amount:st.rate??30 });
+      }
+      if (imported.length > 0) persist([...sessions,...imported].sort((a,b)=>b.date.localeCompare(a.date)), null);
+      setBulkResult({imported:imported.length, failed});
+    } else {
+      const lines = bulkText.split("\n").map(l=>l.trim()).filter(Boolean);
+      const imported=[]; const failed=[];
+      for (const line of lines) {
+        const parsed = parseSpreadsheetRow(line, students);
+        if (!parsed) { failed.push(line); continue; }
+        if (sessions.some(s=>s.studentId===parsed.studentId&&s.date===parsed.dateStr)) { failed.push(`${line} (duplicate)`); continue; }
+        imported.push({ id:Date.now().toString()+Math.random(), ...parsed, notes:parsed.notes||"(imported)" });
+      }
+      if (imported.length > 0) {
+        persist([...sessions,...imported].sort((a,b)=>b.date.localeCompare(a.date)), null);
+        imported.forEach(s => {
+          const st = getStudent(s.studentId);
+          doSync(s, st.name, "log");
+        });
+      }
+      setBulkResult({imported:imported.length, failed});
     }
-    if (imported.length > 0) persist([...sessions,...imported].sort((a,b)=>b.date.localeCompare(a.date)), null);
-    setBulkResult({imported:imported.length, failed});
   };
 
   const copyExport = () => {
@@ -294,15 +342,23 @@ function App() {
       {showBulk&&(
         <div style={{background:C.card,border:"1px solid rgba(88,166,255,0.25)",borderRadius:"12px",padding:"20px",marginBottom:"20px"}}>
           <div style={{fontWeight:800,fontSize:"15px",marginBottom:"12px"}}>⬆ Bulk Import</div>
-          <div style={{color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace",marginBottom:"10px"}}>
-            One session per line · <span style={{color:C.accent}}>"May 7th complete"</span> or <span style={{color:C.accent}}>"May 7th complete paid"</span>
+          <div style={{display:"flex",gap:"6px",marginBottom:"12px"}}>
+            <button onClick={()=>setBulkMode("simple")} style={{...BTN(),flex:1,padding:"7px 12px",background:bulkMode==="simple"?C.accent:"transparent",border:`1px solid ${bulkMode==="simple"?C.accent:C.border}`,color:bulkMode==="simple"?"#000":C.muted,fontSize:"12px"}}>Simple (One Student)</button>
+            <button onClick={()=>setBulkMode("spreadsheet")} style={{...BTN(),flex:1,padding:"7px 12px",background:bulkMode==="spreadsheet"?C.accent:"transparent",border:`1px solid ${bulkMode==="spreadsheet"?C.accent:C.border}`,color:bulkMode==="spreadsheet"?"#000":C.muted,fontSize:"12px"}}>Advanced (Spreadsheet)</button>
           </div>
-          <select value={bulkStudentId} onChange={e=>setBulkStudentId(e.target.value)} style={{...INP(),marginBottom:"10px",width:"auto",minWidth:"200px"}}>
-            <option value="">Select student...</option>
-            {students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
+          <div style={{color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace",marginBottom:"10px"}}>
+            {bulkMode==="simple"
+              ?<><span style={{color:C.accent}}>"May 7th complete"</span> or <span style={{color:C.accent}}>"May 7th complete paid"</span></>
+              :<>Tab-separated: <span style={{color:C.accent}}>Date | Student | Complete | Paid | Amount | Notes</span></>}
+          </div>
+          {bulkMode==="simple"&&(
+            <select value={bulkStudentId} onChange={e=>setBulkStudentId(e.target.value)} style={{...INP(),marginBottom:"10px",width:"auto",minWidth:"200px"}}>
+              <option value="">Select student...</option>
+              {students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          )}
           <textarea value={bulkText} onChange={e=>setBulkText(e.target.value)} rows={5}
-            placeholder={"May 1st complete\nMay 3rd complete paid\nMay 5th complete"}
+            placeholder={bulkMode==="simple" ? "May 1st complete\nMay 3rd complete paid\nMay 5th complete" : "2026-05-01\tShnaur Zalmen Tal\ttrue\tfalse\t30\tLesson notes"}
             style={{...INP(),display:"block",resize:"vertical",marginBottom:"10px",fontFamily:"'DM Mono',monospace",fontSize:"13px"}}/>
           <div style={{display:"flex",gap:"8px"}}>
             <button onClick={runBulkImport} style={{...BTN(),background:C.accent,padding:"9px 20px",color:"#000"}}>Import</button>
@@ -312,7 +368,7 @@ function App() {
             <div style={{marginTop:"12px",padding:"12px",borderRadius:"8px",background:"rgba(63,185,80,0.08)",border:"1px solid rgba(63,185,80,0.2)"}}>
               {bulkResult.error?<span style={{color:"#f78166"}}>{bulkResult.error}</span>:<>
                 <div style={{color:"#3fb950",fontSize:"13px",fontFamily:"'DM Mono',monospace"}}>✓ Imported {bulkResult.imported} session{bulkResult.imported!==1?"s":""}</div>
-                {bulkResult.failed.length>0&&<div style={{color:"#f78166",fontSize:"12px",marginTop:"6px",fontFamily:"'DM Mono',monospace"}}>Skipped: {bulkResult.failed.join(", ")}</div>}
+                {bulkResult.failed.length>0&&<div style={{color:"#f78166",fontSize:"12px",marginTop:"6px",fontFamily:"'DM Mono',monospace"}}>Skipped {bulkResult.failed.length}: {bulkResult.failed.slice(0,3).join(", ")}{bulkResult.failed.length>3?"...":""}</div>}
               </>}
             </div>
           )}
@@ -438,7 +494,7 @@ function App() {
                   <div style={{marginBottom:"14px"}}>
                     <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>COLOR</label>
                     <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
-                      <input type="color" value={editingStudent.color} onChange={e=>setEditingStudent(s=>({...s,color:e.target.value}))} style={{width:"50px",height:"40px"}}/>
+                      <input type="color" value={editingStudent.color} onChange={e=>setEditingStudent(s=>({...s,color:e.target.value}))}/>
                       <span style={{fontSize:"12px",fontFamily:"'DM Mono',monospace",color:editingStudent.color}}>{editingStudent.color}</span>
                     </div>
                   </div>
@@ -500,7 +556,7 @@ function App() {
               <div style={{marginBottom:"14px"}}>
                 <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>COLOR</label>
                 <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
-                  <input type="color" value={newStudent.color} onChange={e=>setNewStudent(s=>({...s,color:e.target.value}))} style={{width:"50px",height:"40px"}}/>
+                  <input type="color" value={newStudent.color} onChange={e=>setNewStudent(s=>({...s,color:e.target.value}))}/>
                   <span style={{fontSize:"12px",fontFamily:"'DM Mono',monospace",color:newStudent.color}}>{newStudent.color}</span>
                 </div>
               </div>
@@ -527,7 +583,7 @@ function App() {
       )}
 
       <div style={{marginTop:"30px",textAlign:"center",color:"rgba(255,255,255,0.08)",fontSize:"11px",fontFamily:"'DM Mono',monospace"}}>
-        saves automatically · data persists in your browser
+        saves automatically · data persists in your browser · PWA ready 📱
       </div>
     </div>
     </div>

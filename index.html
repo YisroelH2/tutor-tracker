@@ -28,9 +28,9 @@
 
 <script>
   // =====================================================================
-  // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
+  // GOOGLE APPS SCRIPT WEB APP URL:
   // =====================================================================
-  window.SHEETS_WEBHOOK_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+  window.SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwcqAmlGwxS6desgje5VHjxipyvGcQvLPiQFudTxCMvaa2hgYug7lSGXjN4UXIk6YyY/exec";
 </script>
 
 <script type="text/babel">
@@ -68,16 +68,15 @@ const parseImportLine = (line) => {
   return { dateStr, complete, paid };
 };
 
-// ── Sheets sync — sends as POST with JSON body, NO no-cors ────────────────
+// ── Sheets sync — sends as GET with URL params ────────────────
 const syncToSheets = async (session, studentName, action="log") => {
   const url = window.SHEETS_WEBHOOK_URL;
-  if (!url || url === "PASTE_YOUR_WEB_APP_URL_HERE") return { skipped: true };
+  if (!url || url.includes("PASTE")) return { skipped: true };
   try {
-    // Use GET with URL params — POST gets cancelled by CORS, GET works fine with Apps Script
     const payload = encodeURIComponent(JSON.stringify({ action, session: { ...session, studentName } }));
     const res = await fetch(`${url}?payload=${payload}`, {
       method: "GET",
-      mode: "no-cors",  // no-cors is fine for GET — we just need it to arrive, not read the response
+      mode: "no-cors",
     });
     return { status: "ok" };
   } catch(e) {
@@ -85,10 +84,9 @@ const syncToSheets = async (session, studentName, action="log") => {
     return { error: e.message };
   }
 };
-};
 
 const C   = { bg:"#0d1117", card:"rgba(255,255,255,0.04)", border:"rgba(255,255,255,0.08)", text:"#e6edf3", muted:"#8b949e", accent:"#58a6ff" };
-const INP = (x={}) => ({ background:"#21262d", border:`1px solid ${C.border}`, borderRadius:"8px", padding:"9px 13px", color:C.text, fontSize:"14px", outline:"none", fontFamily:"'Nunito',sans-serif", width:"100%", ...x });
+const INP = (x={}) => ({ background:"#21262d", border:`1px solid ${C.border}`, borderRadius:"8px", padding:"9px 13px", color:C.text, fontSize:"14px", outline:"none", fontFamily:"'Nunito',sans-serif", ...x });
 const TAG = { fontFamily:"'DM Mono',monospace", fontSize:"10px", letterSpacing:"0.14em", textTransform:"uppercase", padding:"3px 10px", borderRadius:"4px", fontWeight:500, cursor:"pointer" };
 const BTN = (x={}) => ({ border:"none", borderRadius:"8px", cursor:"pointer", fontFamily:"'Nunito',sans-serif", fontWeight:800, ...x });
 
@@ -256,8 +254,8 @@ function App() {
             </div>
           </div>
           <div style={{display:"flex",gap:"8px"}}>
-            <button onClick={()=>setShowExport(v=>!v)} style={{...BTN(),background:C.card,border:`1px solid ${C.border}`,padding:"8px 14px",color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace",fontWeight:500}}>📤 Export</button>
-            <button onClick={()=>setShowBulk(v=>!v)} title="Bulk Import" style={{...BTN(),background:"transparent",border:"1px dashed rgba(255,255,255,0.1)",padding:"8px 10px",color:"rgba(255,255,255,0.15)",fontSize:"11px",fontFamily:"'DM Mono',monospace",fontWeight:400}}>⬆</button>
+            <button onClick={()=>setShowExport(v=>!v)} style={{...BTN(),background:C.card,border:`1px solid ${C.border}`,padding:"8px 14px",color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>📤 Export</button>
+            <button onClick={()=>setShowBulk(v=>!v)} title="Bulk Import" style={{...BTN(),background:"transparent",border:"1px dashed rgba(255,255,255,0.1)",padding:"8px 10px",color:"rgba(255,255,255,0.5)",fontSize:"12px"}}>⬆</button>
           </div>
         </div>
 
@@ -277,7 +275,7 @@ function App() {
               {todaySuggestions.map(st=>{
                 const done=loggedToday(st.id);
                 return(
-                  <div key={st.id} style={{display:"flex",alignItems:"center",gap:"8px",background:done?"rgba(63,185,80,0.1)":"rgba(255,255,255,0.04)",border:`1px solid ${done?"rgba(63,185,80,0.3)":C.border}`,borderRadius:"8px",padding:"8px 14px"}}>
+                  <div key={st.id} style={{display:"flex",alignItems:"center",gap:"8px",background:done?"rgba(63,185,80,0.1)":"rgba(255,255,255,0.04)",border:`1px solid ${done?"rgba(63,185,80,0.3)":"rgba(255,255,255,0.1)"}`,borderRadius:"8px",padding:"8px 12px"}}>
                     <div style={{width:"8px",height:"8px",borderRadius:"50%",background:st.color}}/>
                     <span style={{fontSize:"13px",fontWeight:700}}>{st.name}</span>
                     {done
@@ -338,7 +336,7 @@ function App() {
       {/* Tabs */}
       <div style={{display:"flex",gap:"4px",marginBottom:"20px",background:C.card,borderRadius:"10px",padding:"4px",border:`1px solid ${C.border}`}}>
         {[["log","➕ Log"],["history","📋 History"],["students","👥 Students"]].map(([t,l])=>(
-          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"9px",border:"none",borderRadius:"7px",cursor:"pointer",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:"13px",background:tab===t?"#21262d":"transparent",color:tab===t?C.text:C.muted}}>
+          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"9px",border:"none",borderRadius:"7px",cursor:"pointer",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:"13px",background:tab===t?`${C.border}99`:"transparent",color:C.text,transition:"all 0.2s"}}>
             {l}
           </button>
         ))}
@@ -353,7 +351,7 @@ function App() {
             <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
               {students.map(st=>(
                 <button key={st.id} onClick={()=>setForm(f=>({...f,studentId:st.id}))}
-                  style={{padding:"8px 16px",borderRadius:"8px",border:`2px solid ${form.studentId===st.id?st.color:C.border}`,background:form.studentId===st.id?`${st.color}22`:"transparent",color:form.studentId===st.id?st.color:C.muted,cursor:"pointer",fontWeight:700,fontSize:"13px",fontFamily:"'Nunito',sans-serif"}}>
+                  style={{padding:"8px 16px",borderRadius:"8px",border:`2px solid ${form.studentId===st.id?st.color:C.border}`,background:form.studentId===st.id?`${st.color}22`:"transparent",color:st.color,fontWeight:700,cursor:"pointer"}}>
                   {st.name} <span style={{fontSize:"11px",opacity:0.7}}>${st.rate}</span>
                 </button>
               ))}
@@ -368,7 +366,7 @@ function App() {
             <input value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="e.g. worked on fractions..." style={INP()}/>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px"}}>
-            <button onClick={()=>setForm(f=>({...f,complete:!f.complete}))} style={{width:"22px",height:"22px",borderRadius:"6px",border:`2px solid ${form.complete?"#3fb950":C.border}`,background:form.complete?"#3fb950":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#000",fontWeight:800,fontSize:"13px"}}>
+            <button onClick={()=>setForm(f=>({...f,complete:!f.complete}))} style={{width:"22px",height:"22px",borderRadius:"6px",border:`2px solid ${form.complete?"#3fb950":C.border}`,background:form.complete?"#3fb950":"transparent",color:"white",fontWeight:700,cursor:"pointer"}}>
               {form.complete?"✓":""}
             </button>
             <span style={{fontSize:"14px",color:form.complete?"#3fb950":C.muted}}>Mark as complete</span>
@@ -397,7 +395,7 @@ function App() {
               {filteredSessions.map(s=>{
                 const st=getStudent(s.studentId);
                 return(
-                  <div key={s.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"10px",padding:"14px 16px",display:"flex",alignItems:"center",gap:"12px",flexWrap:"wrap",opacity:s.complete?1:0.65}}>
+                  <div key={s.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"10px",padding:"14px 16px",display:"flex",alignItems:"center",gap:"12px",flexWrap:"wrap",opacity:s.complete?"1":"0.6"}}>
                     <div style={{width:"10px",height:"10px",borderRadius:"50%",background:st.color,flexShrink:0}}/>
                     <div style={{flex:1,minWidth:"120px"}}>
                       <div style={{fontWeight:700,fontSize:"14px"}}>{st.name}</div>
@@ -405,10 +403,10 @@ function App() {
                       {s.notes&&<div style={{color:C.muted,fontSize:"12px",marginTop:"2px",fontStyle:"italic"}}>{s.notes}</div>}
                     </div>
                     <div style={{display:"flex",gap:"6px",alignItems:"center",flexWrap:"wrap"}}>
-                      <span onClick={()=>toggleComplete(s.id)} style={{...TAG,background:s.complete?"rgba(63,185,80,0.15)":"rgba(139,148,158,0.1)",color:s.complete?"#3fb950":C.muted,border:`1px solid ${s.complete?"rgba(63,185,80,0.3)":C.border}`}}>
+                      <span onClick={()=>toggleComplete(s.id)} style={{...TAG,background:s.complete?"rgba(63,185,80,0.15)":"rgba(139,148,158,0.1)",color:s.complete?"#3fb950":C.muted,border:`1px solid ${s.complete?"rgba(63,185,80,0.3)":"rgba(139,148,158,0.2)"}`,cursor:"pointer"}}>
                         {s.complete?"✓ Done":"Pending"}
                       </span>
-                      <span onClick={()=>togglePaid(s.id)} style={{...TAG,background:s.paid?"rgba(88,166,255,0.15)":"rgba(247,129,102,0.1)",color:s.paid?C.accent:"#f78166",border:`1px solid ${s.paid?"rgba(88,166,255,0.3)":"rgba(247,129,102,0.3)"}`}}>
+                      <span onClick={()=>togglePaid(s.id)} style={{...TAG,background:s.paid?"rgba(88,166,255,0.15)":"rgba(247,129,102,0.1)",color:s.paid?C.accent:"#f78166",border:`1px solid ${s.paid?"rgba(88,166,255,0.3)":"rgba(247,129,102,0.2)"}`,cursor:"pointer"}}>
                         {s.paid?`💰 $${s.amount} Paid`:`⏳ $${s.amount} Owed`}
                       </span>
                       <button onClick={()=>deleteSession(s.id)} style={{background:"transparent",border:"none",color:C.muted,cursor:"pointer",fontSize:"14px"}}>🗑</button>
@@ -441,7 +439,7 @@ function App() {
                     <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
                       {DAY_NAMES.map((d,i)=>{
                         const active=editingStudent.scheduledDays?.includes(i);
-                        return<button key={i} onClick={()=>toggleDay(i,editingStudent,setEditingStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?st.color:C.border}`,background:active?`${st.color}22`:"transparent",color:active?st.color:C.muted,cursor:"pointer",fontFamily:"'DM Mono',monospace",fontSize:"12px",fontWeight:600}}>{d}</button>;
+                        return<button key={i} onClick={()=>toggleDay(i,editingStudent,setEditingStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?st.color:C.border}`,background:active?`${st.color}22`:"transparent",color:active?st.color:C.muted,fontWeight:600,cursor:"pointer"}}>{d}</button>;
                       })}
                     </div>
                     <div style={{color:C.muted,fontSize:"11px",marginTop:"6px",fontFamily:"'DM Mono',monospace"}}>Leave empty to hide day suggestions</div>
@@ -464,8 +462,8 @@ function App() {
                       </div>
                     </div>
                     <div style={{display:"flex",gap:"6px"}}>
-                      <button onClick={()=>setEditingStudent({...st})} style={{...BTN(),background:"transparent",border:`1px solid ${C.border}`,padding:"6px 14px",color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace",fontWeight:500}}>✎ Edit</button>
-                      <button onClick={()=>deleteStudent(st.id)} style={{...BTN(),background:"transparent",border:"1px solid rgba(247,129,102,0.3)",padding:"6px 14px",color:"#f78166",fontSize:"12px",fontFamily:"'DM Mono',monospace",fontWeight:500}}>🗑 Delete</button>
+                      <button onClick={()=>setEditingStudent({...st})} style={{...BTN(),background:"transparent",border:`1px solid ${C.border}`,padding:"6px 14px",color:C.muted,fontSize:"12px",fontWeight:600}}>Edit</button>
+                      <button onClick={()=>deleteStudent(st.id)} style={{...BTN(),background:"transparent",border:"1px solid rgba(247,129,102,0.3)",padding:"6px 14px",color:"#f78166",fontSize:"12px",fontWeight:600}}>Delete</button>
                     </div>
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"10px"}}>
@@ -496,7 +494,7 @@ function App() {
                 <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
                   {DAY_NAMES.map((d,i)=>{
                     const active=newStudent.scheduledDays?.includes(i);
-                    return<button key={i} onClick={()=>toggleDay(i,newStudent,setNewStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?C.accent:C.border}`,background:active?"rgba(88,166,255,0.15)":"transparent",color:active?C.accent:C.muted,cursor:"pointer",fontFamily:"'DM Mono',monospace",fontSize:"12px",fontWeight:600}}>{d}</button>;
+                    return<button key={i} onClick={()=>toggleDay(i,newStudent,setNewStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?C.accent:C.border}`,background:active?"rgba(88,166,255,0.2)":"transparent",color:active?C.accent:C.muted,fontWeight:600,cursor:"pointer"}}>{d}</button>;
                   })}
                 </div>
               </div>
@@ -506,7 +504,7 @@ function App() {
               </div>
             </div>
           ):(
-            <button onClick={()=>setShowAddStudent(true)} style={{...BTN(),background:"transparent",border:`2px dashed ${C.border}`,borderRadius:"12px",padding:"16px",color:C.muted,fontSize:"14px",width:"100%",fontWeight:700}}>
+            <button onClick={()=>setShowAddStudent(true)} style={{...BTN(),background:"transparent",border:`2px dashed ${C.border}`,borderRadius:"12px",padding:"16px",color:C.muted,fontSize:"14px",fontWeight:600}}>
               + Add New Student
             </button>
           )}

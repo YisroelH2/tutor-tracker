@@ -1,8 +1,9 @@
 {
-  "name": "Tutor Tracker",
+  "name": "Tutor Tracker PWA",
   "short_name": "Tutor Tracker",
-  "description": "Keep track of the tutoring and payment",
-  "start_url": "/",
+  "description": "Track tutoring sessions with live logging and archived backups.",
+  "id": "/",
+  "start_url": "/?tab=log",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -11,21 +12,9 @@
   "icons": [
     {
       "src": "icon.png",
-      "sizes": "192x192",
+      "sizes": "1254x1254",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [

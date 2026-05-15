@@ -356,9 +356,7 @@ function App() {
           <div style={{display:"flex",gap:"8px"}}>
           <div style={{display:"flex",gap:"8px"}}>
   <button onClick={syncAllSessions} style={{...BTN(),background:C.accent,padding:"8px 14px",color:"#000",fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>Sync</button>
-  <button onClick={()=>setShowExport(v=>!v)} style={{...BTN(),background:C.card,border:`1px solid ${C.border}`,padding:"8px 14px",color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>Export</button>
-  <button onClick={()=>setShowBulk(v=>!v)} title="Bulk Import" style={{...BTN(),background:"transparent",border:"1px dashed rgba(255,255,255,0.1)",padding:"8px 10px",color:"rgba(255,255,255,0.5)",fontSize:"12px"}}>Upload</button>
-</div>
+  </div>
             <button onClick={()=>setShowExport(v=>!v)} style={{...BTN(),background:C.card,border:`1px solid ${C.border}`,padding:"8px 14px",color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>📤 Export</button>
             <button onClick={()=>setShowBulk(v=>!v)} title="Bulk Import" style={{...BTN(),background:"transparent",border:"1px dashed rgba(255,255,255,0.1)",padding:"8px 10px",color:"rgba(255,255,255,0.5)",fontSize:"12px"}}>⬆</button>
           </div>

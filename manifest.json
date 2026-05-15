@@ -1,22 +1,23 @@
 {
   "name": "Tutor Tracker",
-  "short_name": "TutorTracker",
-  "description": "Track tutoring sessions and sync with Google Sheets",
-  "start_url": "/?tab=log",
-  "scope": "/",
+  "short_name": "Tutor Tracker",
+  "description": "Track tutoring sessions and sync with Google Sheets.",
+  "id": "/tutor-tracker/",
+  "start_url": "./?tab=log",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d1117",
   "theme_color": "#58a6ff",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "./icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon.png",
+      "src": "./icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -26,20 +27,20 @@
     {
       "name": "Log Session",
       "short_name": "Log",
-      "url": "/?tab=log",
-      "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png" }]
+      "url": "./?tab=log",
+      "icons": [{ "src": "./icon.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "View History",
       "short_name": "History",
-      "url": "/?tab=history",
-      "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png" }]
+      "url": "./?tab=history",
+      "icons": [{ "src": "./icon.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Students",
       "short_name": "Students",
-      "url": "/?tab=students",
-      "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png" }]
+      "url": "./?tab=students",
+      "icons": [{ "src": "./icon.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

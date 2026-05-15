@@ -1,10 +1,13 @@
 // ============================================================
-// TUTOR TRACKER — PWA Webhook Backend (Sheet1 + Sheet2)
+// TUTOR TRACKER - Apps Script backend
+// Sheet 1: Live_Sessions (rewritten on Sync)
+// Sheet 2: Archive (append-only, never cleared)
 // ============================================================
 
-const LIVE_SHEET_NAME = "Sheet1";      // Live Log (rewritable)
-const ARCHIVE_SHEET_NAME = "Sheet2";   // Session Archive (append-only)
-const HEADERS = [
+const LIVE_SHEET_NAME = "Live_Sessions";
+const ARCHIVE_SHEET_NAME = "Archive";
+
+const LIVE_HEADERS = [
   "Timestamp",
   "Date",
   "Student",
@@ -12,137 +15,263 @@ const HEADERS = [
   "Paid",
   "Amount",
   "Notes",
-  "Session ID",
-  "Backup Payload"
+  "Session ID"
 ];
 
-function doGet(e) { return handleRequest(e); }
-function doPost(e) { return handleRequest(e); }
+const ARCHIVE_HEADERS = [
+  ...LIVE_HEADERS,
+  "Bulk Import"
+];
+
+function doGet(e) {
+  return handleRequest(e);
+}
+
+function doPost(e) {
+  return handleRequest(e);
+}
 
 function handleRequest(e) {
   try {
-    const data = parseRequestBody(e);
-    if (!data) return makeResponse({ status: "ok", message: "Tutor Tracker Webhook Active ✓" });
+    const payload = parsePayload(e);
+    if (!payload) {
+      return jsonResponse({ status: "ok", message: "Tutor Tracker webhook active" });
+    }
 
-    const action = data.action || "log";
-    const session = data.session;
-    if (!session) return makeResponse({ status: "error", message: "No session data received" });
+    if (payload.action === "sync_all") {
+      return jsonResponse(syncAll(payload.sessions || [], payload.students || []));
+    }
 
-    if (action === "log") return makeResponse(addSession(session));
-    if (action === "update_paid") return makeResponse(updatePaid(session));
+    if (payload.action === "log" && payload.session) {
+      return jsonResponse(addOrUpdateLiveSession(payload.session, payload.students || []));
+    }
 
-    return makeResponse({ status: "error", message: "Unknown action: " + action });
+    if (payload.action === "update_paid" && payload.session) {
+      return jsonResponse(updateLivePaid(payload.session));
+    }
+
+    return jsonResponse({ status: "error", message: "Unknown or missing action" });
   } catch (err) {
-    return makeResponse({ status: "error", message: String(err) });
+    return jsonResponse({ status: "error", message: String(err) });
   }
 }
 
-function parseRequestBody(e) {
-  if (e && e.postData && e.postData.contents) return JSON.parse(e.postData.contents);
-  if (e && e.parameter && e.parameter.payload) return JSON.parse(decodeURIComponent(e.parameter.payload));
+function parsePayload(e) {
+  if (e && e.postData && e.postData.contents) {
+    return JSON.parse(e.postData.contents);
+  }
+  if (e && e.parameter && e.parameter.payload) {
+    return JSON.parse(decodeURIComponent(e.parameter.payload));
+  }
   return null;
 }
 
-function addSession(session) {
+function syncAll(sessions, students) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const liveSheet = getOrCreate(ss, LIVE_SHEET_NAME);
-  const archiveSheet = getOrCreate(ss, ARCHIVE_SHEET_NAME);
+  const liveSheet = getOrCreateSheet(ss, LIVE_SHEET_NAME);
+  const archiveSheet = getOrCreateSheet(ss, ARCHIVE_SHEET_NAME);
 
-  ensureHeaders(liveSheet);
-  ensureHeaders(archiveSheet);
+  resetLiveSheet(liveSheet);
+  ensureArchiveHeaders(archiveSheet);
 
-  if (findRowBySessionId(liveSheet, session.id)) {
-    return { status: "duplicate", message: "Session already exists in Sheet1" };
+  const liveRows = sessions.map((session) => buildLiveRow(session, students));
+  if (liveRows.length) {
+    liveSheet.getRange(2, 1, liveRows.length, LIVE_HEADERS.length).setValues(liveRows);
   }
 
-  const row = buildRow(session);
-  liveSheet.appendRow(row);
+  const existingArchiveIds = getExistingArchiveIds(archiveSheet);
+  const archiveRows = [];
+  sessions.forEach((session) => {
+    const id = String(session.id || "");
+    if (!id || existingArchiveIds[id]) return;
+    archiveRows.push(buildArchiveRow(session, students));
+    existingArchiveIds[id] = true;
+  });
 
-  if (session.complete) {
-    archiveSheet.appendRow(row);
+  if (archiveRows.length) {
+    archiveSheet
+      .getRange(archiveSheet.getLastRow() + 1, 1, archiveRows.length, ARCHIVE_HEADERS.length)
+      .setValues(archiveRows);
   }
 
-  formatSheet(liveSheet);
-  return { status: "ok", message: "Session saved to Sheet1 and archived in Sheet2 when complete ✓" };
-}
+  formatSheet(liveSheet, LIVE_HEADERS.length);
+  formatSheet(archiveSheet, ARCHIVE_HEADERS.length);
 
-function updatePaid(session) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const liveSheet = getOrCreate(ss, LIVE_SHEET_NAME);
-  ensureHeaders(liveSheet);
-
-  const rowIndex = findRowBySessionId(liveSheet, session.id);
-  if (!rowIndex) return { status: "not_found", message: "Session ID not found in Sheet1" };
-
-  liveSheet.getRange(rowIndex, 5).setValue(session.paid ? "Yes" : "No");
-  liveSheet.getRange(rowIndex, 1).setValue(new Date().toLocaleString());
-
-  return { status: "ok", message: "Sheet1 paid status updated ✓" };
-}
-
-function buildRow(s) {
-  const normalized = {
-    id: s.id || "",
-    date: s.date || "",
-    studentName: s.studentName || s.studentId || "Unknown",
-    complete: !!s.complete,
-    paid: !!s.paid,
-    amount: Number(s.amount) || 0,
-    notes: s.notes || ""
+  return {
+    status: "ok",
+    message: "Live_Sessions rewritten and Archive appended",
+    liveRows: liveRows.length,
+    archiveRowsAdded: archiveRows.length
   };
+}
 
-  const backupPayload = JSON.stringify(normalized);
+function addOrUpdateLiveSession(session, students) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const liveSheet = getOrCreateSheet(ss, LIVE_SHEET_NAME);
+  const archiveSheet = getOrCreateSheet(ss, ARCHIVE_SHEET_NAME);
 
+  if (liveSheet.getLastRow() === 0) resetLiveSheet(liveSheet);
+  ensureArchiveHeaders(archiveSheet);
+
+  const row = buildLiveRow(session, students);
+  const rowIndex = findLiveRowBySessionId(liveSheet, session.id);
+  if (rowIndex) {
+    liveSheet.getRange(rowIndex, 1, 1, LIVE_HEADERS.length).setValues([row]);
+  } else {
+    liveSheet.appendRow(row);
+  }
+
+  const id = String(session.id || "");
+  const existingArchiveIds = getExistingArchiveIds(archiveSheet);
+  if (id && !existingArchiveIds[id]) {
+    archiveSheet.appendRow(buildArchiveRow(session, students));
+  }
+
+  formatSheet(liveSheet, LIVE_HEADERS.length);
+  formatSheet(archiveSheet, ARCHIVE_HEADERS.length);
+
+  return { status: "ok", message: "Session saved" };
+}
+
+function updateLivePaid(session) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const liveSheet = getOrCreateSheet(ss, LIVE_SHEET_NAME);
+  if (liveSheet.getLastRow() === 0) resetLiveSheet(liveSheet);
+
+  const rowIndex = findLiveRowBySessionId(liveSheet, session.id);
+  if (!rowIndex) return { status: "not_found", message: "Session ID not found in Live_Sessions" };
+
+  liveSheet.getRange(rowIndex, 1).setValue(new Date());
+  liveSheet.getRange(rowIndex, 5).setValue(truthy(session.paid) ? "Yes" : "No");
+  return { status: "ok", message: "Paid status updated in Live_Sessions" };
+}
+
+function resetLiveSheet(sheet) {
+  sheet.clearContents();
+  sheet.getRange(1, 1, 1, LIVE_HEADERS.length).setValues([LIVE_HEADERS]);
+  styleHeader(sheet, LIVE_HEADERS.length);
+}
+
+function ensureArchiveHeaders(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, ARCHIVE_HEADERS.length).setValues([ARCHIVE_HEADERS]);
+    styleHeader(sheet, ARCHIVE_HEADERS.length);
+    return;
+  }
+
+  const current = sheet.getRange(1, 1, 1, ARCHIVE_HEADERS.length).getValues()[0];
+  const matches = ARCHIVE_HEADERS.every((header, index) => String(current[index]) === header);
+  if (!matches) {
+    sheet.getRange(1, 1, 1, ARCHIVE_HEADERS.length).setValues([ARCHIVE_HEADERS]);
+    styleHeader(sheet, ARCHIVE_HEADERS.length);
+  }
+}
+
+function buildLiveRow(session, students) {
+  const normalized = normalizeSession(session, students);
   return [
-    new Date().toLocaleString(),
+    new Date(),
     normalized.date,
-    normalized.studentName,
-    normalized.complete ? "Yes" : "No",
-    normalized.paid ? "Yes" : "No",
+    normalized.student,
+    normalized.complete,
+    normalized.paid,
     normalized.amount,
     normalized.notes,
-    normalized.id,
-    backupPayload
+    normalized.id
   ];
 }
 
-function getOrCreate(ss, name) {
-  let sheet = ss.getSheetByName(name);
-  if (!sheet) {
-    sheet = ss.insertSheet(name);
-    ensureHeaders(sheet);
-  }
-  return sheet;
+function buildArchiveRow(session, students) {
+  const liveRow = buildLiveRow(session, students);
+  const normalized = normalizeSession(session, students);
+  return [...liveRow, buildBulkImportString(normalized)];
 }
 
-function ensureHeaders(sheet) {
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(HEADERS);
-    sheet.getRange(1, 1, 1, HEADERS.length)
-      .setFontWeight("bold")
-      .setBackground("#1c2128")
-      .setFontColor("#adbac7");
-    sheet.setFrozenRows(1);
-  }
+function normalizeSession(session, students) {
+  const student =
+    session.studentName ||
+    findStudentName(session.studentId, students) ||
+    session.studentId ||
+    "Unknown";
+
+  return {
+    id: String(session.id || ""),
+    date: session.date || session.dateStr || "",
+    student,
+    complete: truthy(session.complete) ? "Yes" : "No",
+    paid: truthy(session.paid) ? "Yes" : "No",
+    amount: Number(session.amount || 0),
+    notes: session.notes || ""
+  };
 }
 
-function findRowBySessionId(sheet, id) {
+function buildBulkImportString(session) {
+  return [
+    session.date,
+    session.student,
+    session.complete,
+    session.paid,
+    session.amount,
+    session.notes
+  ].join("\t");
+}
+
+function findStudentName(studentId, students) {
+  if (!studentId || !students || !students.length) return "";
+  const match = students.find((student) => String(student.id) === String(studentId));
+  return match ? match.name : "";
+}
+
+function truthy(value) {
+  return value === true || value === "true" || value === "Yes" || value === "yes" || value === 1 || value === "1";
+}
+
+function getExistingArchiveIds(sheet) {
+  const ids = {};
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return null;
+  if (lastRow < 2) return ids;
 
-  const ids = sheet.getRange(2, 8, lastRow - 1, 1).getValues();
+  const values = sheet.getRange(2, 8, lastRow - 1, 1).getValues();
+  values.forEach((row) => {
+    const id = String(row[0] || "");
+    if (id) ids[id] = true;
+  });
+  return ids;
+}
+
+function findLiveRowBySessionId(sheet, id) {
   const target = String(id || "");
-  for (var i = 0; i < ids.length; i++) {
-    if (String(ids[i][0]) === target) return i + 2;
+  if (!target || sheet.getLastRow() < 2) return null;
+
+  const values = sheet.getRange(2, 8, sheet.getLastRow() - 1, 1).getValues();
+  for (let index = 0; index < values.length; index++) {
+    if (String(values[index][0] || "") === target) return index + 2;
   }
   return null;
 }
 
-function formatSheet(sheet) {
-  for (var c = 1; c <= HEADERS.length; c++) sheet.autoResizeColumn(c);
+function getOrCreateSheet(ss, name) {
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) sheet = ss.insertSheet(name);
+  return sheet;
 }
 
-function makeResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
+function styleHeader(sheet, width) {
+  sheet.getRange(1, 1, 1, width)
+    .setFontWeight("bold")
+    .setBackground("#1c2128")
+    .setFontColor("#adbac7");
+  sheet.setFrozenRows(1);
+}
+
+function formatSheet(sheet, width) {
+  for (let column = 1; column <= width; column++) {
+    sheet.autoResizeColumn(column);
+  }
+}
+
+function jsonResponse(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }

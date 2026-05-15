@@ -42,12 +42,21 @@
 
   // =====================================================================
   // GOOGLE APPS SCRIPT WEB APP URL:
+  // Replace this with your deployed Web App URL from Code.gs
   // =====================================================================
-  window.SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwcqAmlGwxS6desgje5VHjxipyvGcQvLPiQFudTxCMvaa2hgYug7lSGXjN4UXIk6YyY/exec";
+  window.SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_ID/exec";
 </script>
 
 <script type="text/babel">
 const { useState, useEffect } = React;
+
+const VALID_TABS = ["log", "history", "students"];
+
+const tabFromLocation = () => {
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get("tab");
+  return VALID_TABS.includes(tab) ? tab : "log";
+};
 
 const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const COLORS    = ["#4f9cf9","#f97b4f","#a78bfa","#34d399","#f472b6","#fbbf24","#60a5fa"];
@@ -123,7 +132,7 @@ function App() {
   const [students,       setStudents]       = useState(DEFAULT_STUDENTS);
   const [sessions,       setSessions]       = useState([]);
   const [loaded,         setLoaded]         = useState(false);
-  const [tab,            setTab]            = useState("log");
+  const [tab,            setTab]            = useState(tabFromLocation);
   const [saveMsg,        setSaveMsg]        = useState("");
   const [syncMsg,        setSyncMsg]        = useState("");
   const [form,           setForm]           = useState({studentId:"s1",date:todayStr(),notes:"",complete:true});
@@ -143,6 +152,24 @@ function App() {
     const ss = store.get("tt-sessions"); if (ss) setSessions(ss);
     const st = store.get("tt-students"); if (st) setStudents(st);
     setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("tab") !== tab) {
+      url.searchParams.set("tab", tab);
+      window.history.replaceState({}, "", url);
+    }
+  }, [tab]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextTab = tabFromLocation();
+      setTab((current) => (current === nextTab ? current : nextTab));
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   const flash = (msg, setter=setSaveMsg, ms=1500) => { setter(msg); setTimeout(()=>setter(""), ms); };

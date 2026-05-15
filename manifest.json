@@ -1,8 +1,8 @@
 {
   "name": "Tutor Tracker",
-  "short_name": "Tutor Tracker",
-  "description": "Keep track of the tutoring and payment",
-  "start_url": "/",
+  "short_name": "TutorTracker",
+  "description": "Track tutoring sessions and sync with Google Sheets",
+  "start_url": "/?tab=log",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -13,47 +13,33 @@
       "src": "icon.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Log Session",
       "short_name": "Log",
-      "description": "Quick log a tutoring session",
       "url": "/?tab=log",
-      "icons": [
-        {
-          "src": "icon.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
+      "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "View History",
       "short_name": "History",
-      "description": "View session history",
       "url": "/?tab=history",
-      "icons": [
-        {
-          "src": "icon.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
+      "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Students",
+      "short_name": "Students",
+      "url": "/?tab=students",
+      "icons": [{ "src": "icon.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

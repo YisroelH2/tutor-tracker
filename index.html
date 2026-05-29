@@ -84,23 +84,32 @@ const parseImportLine = (line) => {
   return { dateStr, complete, paid };
 };
 
+// ── FIXED: strips outer quotes Google Sheets adds to cells containing tabs ──
 const parseSpreadsheetRow = (row, students) => {
-  const cols = row.split('\t').map(c => c.trim());
+  // Google Sheets wraps cells containing tabs in double-quotes when copying.
+  // Strip those outer quotes and unescape any "" inside before splitting.
+  let clean = row.trim();
+  if (clean.startsWith('"') && clean.endsWith('"')) {
+    clean = clean.slice(1, -1).replace(/""/g, '"');
+  }
+
+  const cols = clean.split('\t').map(c => c.trim());
   if (cols.length < 2) return null;
   const [dateStr, studentName, completeStr, paidStr, amountStr, notes] = cols;
   if (!dateStr || !studentName) return null;
-  
+
   const st = students.find(s => s.name.toLowerCase() === studentName.toLowerCase());
   if (!st) return null;
-  
+
   const complete = ['true','yes','1','complete'].includes(completeStr?.toLowerCase());
-  const paid = ['true','yes','1','paid'].includes(paidStr?.toLowerCase());
-  const amount = parseFloat(amountStr) || st.rate;
-  
+  const paid     = ['true','yes','1','paid'].includes(paidStr?.toLowerCase());
+  // Strip $ or , before parsing so "$30" and "30" both work
+  const amount   = parseFloat(String(amountStr || '').replace(/[$,]/g, '')) || st.rate;
+
   return { dateStr, studentId: st.id, complete, paid, amount, notes: notes || "" };
 };
 
-// ── Sheets sync — sends as GET with URL params ────────────────
+// ── Sheets sync ────────────────────────────────────────────────
 const postToSheets = async (payload) => {
   const url = window.SHEETS_WEBHOOK_URL;
   if (!url || url.includes("PASTE")) return { skipped: true };
@@ -163,7 +172,6 @@ function App() {
       const nextTab = tabFromLocation();
       setTab((current) => (current === nextTab ? current : nextTab));
     };
-
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
@@ -186,34 +194,22 @@ function App() {
   const totalEarned = sessions.filter(s=>s.complete&&s.paid).reduce((a,s)=>a+s.amount,0);
   const totalOwed   = sessions.filter(s=>s.complete&&!s.paid).reduce((a,s)=>a+s.amount,0);
 
-  
-    const syncToSheets = async (session, studentName, action = "log") => {
-    return postToSheets({
-      action,
-      session: { ...session, studentName },
-      students,
-    });
+  const syncToSheets = async (session, studentName, action = "log") => {
+    return postToSheets({ action, session: { ...session, studentName }, students });
   };
 
-    const syncAllSessions = async () => {
+  const syncAllSessions = async () => {
     flash("Syncing all sessions...", setSyncMsg, 3000);
     const sessionsWithNames = sessions.map((session) => ({
       ...session,
       studentName: getStudent(session.studentId).name,
     }));
-
-    const result = await postToSheets({
-      action: "sync_all",
-      sessions: sessionsWithNames,
-      students,
-    });
-
+    const result = await postToSheets({ action: "sync_all", sessions: sessionsWithNames, students });
     if (result?.skipped) flash("", setSyncMsg, 1);
     else if (result?.error) flash(`Sync failed: ${result.error}`, setSyncMsg, 3500);
     else flash("Synced to Sheets", setSyncMsg, 2500);
   };
 
-  
   const doSync = async (session, studentName, action) => {
     flash("Syncing...", setSyncMsg, 2000);
     const result = await syncToSheets(session, studentName, action);
@@ -354,9 +350,7 @@ function App() {
             </div>
           </div>
           <div style={{display:"flex",gap:"8px"}}>
-          <div style={{display:"flex",gap:"8px"}}>
-  <button onClick={syncAllSessions} style={{...BTN(),background:C.accent,padding:"8px 14px",color:"#000",fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>Sync</button>
-  </div>
+            <button onClick={syncAllSessions} style={{...BTN(),background:C.accent,padding:"8px 14px",color:"#000",fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>Sync</button>
             <button onClick={()=>setShowExport(v=>!v)} style={{...BTN(),background:C.card,border:`1px solid ${C.border}`,padding:"8px 14px",color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>📤 Export</button>
             <button onClick={()=>setShowBulk(v=>!v)} title="Bulk Import" style={{...BTN(),background:"transparent",border:"1px dashed rgba(255,255,255,0.1)",padding:"8px 10px",color:"rgba(255,255,255,0.5)",fontSize:"12px"}}>⬆</button>
           </div>
@@ -403,7 +397,7 @@ function App() {
           <div style={{color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace",marginBottom:"10px"}}>
             {bulkMode==="simple"
               ?<><span style={{color:C.accent}}>"May 7th complete"</span> or <span style={{color:C.accent}}>"May 7th complete paid"</span></>
-              :<>Tab-separated: <span style={{color:C.accent}}>Date | Student | Complete | Paid | Amount | Notes</span></>}
+              :<>Copy column I (Bulk Import) from your Archive sheet and paste below</>}
           </div>
           {bulkMode==="simple"&&(
             <select value={bulkStudentId} onChange={e=>setBulkStudentId(e.target.value)} style={{...INP(),marginBottom:"10px",width:"auto",minWidth:"200px"}}>
@@ -412,7 +406,7 @@ function App() {
             </select>
           )}
           <textarea value={bulkText} onChange={e=>setBulkText(e.target.value)} rows={5}
-            placeholder={bulkMode==="simple" ? "May 1st complete\nMay 3rd complete paid\nMay 5th complete" : "2026-05-01\tShnaur Zalmen Tal\ttrue\tfalse\t30\tLesson notes"}
+            placeholder={bulkMode==="simple" ? "May 1st complete\nMay 3rd complete paid\nMay 5th complete" : "Paste rows from Archive sheet column I here..."}
             style={{...INP(),display:"block",resize:"vertical",marginBottom:"10px",fontFamily:"'DM Mono',monospace",fontSize:"13px"}}/>
           <div style={{display:"flex",gap:"8px"}}>
             <button onClick={runBulkImport} style={{...BTN(),background:C.accent,padding:"9px 20px",color:"#000"}}>Import</button>

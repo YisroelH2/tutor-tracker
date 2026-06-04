@@ -6,159 +6,311 @@
   <title>Tutor Tracker</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="Tutor Tracker"/>
-  <meta name="theme-color" content="#0d1117"/>
+  <meta name="theme-color" content="#ffffff"/>
   <link rel="manifest" href="./manifest.json"/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <!-- React & ReactDOM UMD — no Babel needed, JSX is pre-compiled -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
+    :root {
+      --bg:         #F2F4F8;
+      --surface:    #FFFFFF;
+      --border:     #E4E8F0;
+      --primary:    #4F6BED;
+      --primary-dk: #3A54D8;
+      --primary-bg: #EEF1FD;
+      --green:      #16A34A;
+      --green-bg:   #DCFCE7;
+      --red:        #DC2626;
+      --red-bg:     #FEE2E2;
+      --amber:      #D97706;
+      --amber-bg:   #FEF3C7;
+      --text:       #111827;
+      --text2:      #4B5563;
+      --text3:      #9CA3AF;
+      --shadow-sm:  0 1px 4px rgba(0,0,0,0.07);
+      --shadow:     0 4px 24px rgba(0,0,0,0.08);
+      --r:          18px;
+      --r-sm:       12px;
+      --r-xs:       8px;
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0d1117; color: #e6edf3; font-family: 'Nunito', sans-serif; }
-    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-    input[type="color"] { width: 50px; height: 40px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; cursor: pointer; }
-    select option { background: #21262d; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0d1117; }
-    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+    html { -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; padding-bottom: 88px; }
+    input, textarea, select, button { font-family: 'Outfit', sans-serif; }
+    input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
+    input[type="color"] { width: 44px; height: 36px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; padding: 2px; background: none; }
+    select option { background: white; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up { animation: fadeUp 0.25s ease; }
+    .card { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+    .inp { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--r-xs); padding: 11px 14px; font-size: 15px; color: var(--text); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+    .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,107,237,0.12); background: #fff; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: var(--r-xs); cursor: pointer; font-weight: 600; font-size: 14px; padding: 10px 18px; transition: all 0.15s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:active { background: var(--primary-dk); transform: scale(0.98); }
+    .btn-ghost { background: transparent; color: var(--text2); border: 1.5px solid var(--border); }
+    .btn-ghost:active { background: var(--bg); }
+    .btn-danger { background: var(--red-bg); color: var(--red); border: 1.5px solid rgba(220,38,38,0.2); }
+    .btn-lg { padding: 14px 24px; font-size: 16px; font-weight: 700; border-radius: var(--r-sm); }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: opacity 0.15s; }
+    .badge:active { opacity: 0.7; }
+    .badge-green { background: var(--green-bg); color: var(--green); }
+    .badge-red   { background: var(--red-bg);   color: var(--red); }
+    .badge-blue  { background: var(--primary-bg); color: var(--primary); }
+    .badge-amber { background: var(--amber-bg); color: var(--amber); }
+    .badge-gray  { background: var(--bg); color: var(--text2); border: 1px solid var(--border); }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border); display: flex; padding: 8px 0 max(12px, env(safe-area-inset-bottom)); z-index: 100; }
+    .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: var(--r-xs); transition: all 0.15s; }
+    .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-label { font-size: 11px; font-weight: 600; color: var(--text3); transition: color 0.15s; }
+    .nav-btn.active .nav-label { color: var(--primary); }
+    .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--primary); opacity: 0; transition: opacity 0.15s; margin-top: -2px; }
+    .nav-btn.active .nav-dot { opacity: 1; }
+    .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+    .day-btn { padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--border); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .stat-card { background: var(--surface); border-radius: var(--r-sm); border: 1px solid var(--border); padding: 16px 12px; text-align: center; flex: 1; }
+    .stat-value { font-size: 24px; font-weight: 800; line-height: 1.1; }
+    .stat-label { font-size: 11px; font-weight: 600; color: var(--text3); margin-top: 2px; }
+    .session-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .session-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .today-banner { background: linear-gradient(135deg, var(--primary) 0%, #6B7FEF 100%); border-radius: var(--r-sm); padding: 14px 16px; color: white; }
+    .student-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 22px; }
+    .panel-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; }
+    .check-btn { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; transition: all 0.15s; }
+    .check-btn.checked { background: var(--green); border-color: var(--green); color: white; }
   </style>
 </head>
 <body>
 <div id="root"></div>
-
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("./service-worker.js", { scope: "./" })
-        .then(() => console.log("Service Worker registered"))
-        .catch(err => console.warn("Service Worker registration failed:", err));
+        .then(() => console.log("SW registered"))
+        .catch(e => console.warn("SW failed:", e));
     });
   }
-
   window.SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxgdufKcV6mn_vo4Tp9UZs6SWJTGvuibLJ-g2BvRu3tpN8z8vgTmZOuesFYZh368JRO/exec";
 </script>
-
-
-<script type="text/babel">
-const { useState, useEffect } = React;
-
+<script>
+const {
+  useState,
+  useEffect,
+  useMemo
+} = React;
 const VALID_TABS = ["log", "history", "students"];
-
 const tabFromLocation = () => {
-  const params = new URLSearchParams(window.location.search);
-  const tab = params.get("tab");
-  return VALID_TABS.includes(tab) ? tab : "log";
+  const p = new URLSearchParams(window.location.search);
+  const t = p.get("tab");
+  return VALID_TABS.includes(t) ? t : "log";
 };
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const COLORS = ["#4F6BED", "#E05A2B", "#8B5CF6", "#059669", "#DB2777", "#D97706", "#0891B2"];
+const DEFAULT_STUDENTS = [{
+  id: "s1",
+  name: "Shnaur Zalmen Tal",
+  color: "#4F6BED",
+  scheduledDays: [],
+  rate: 30
+}, {
+  id: "s2",
+  name: "Pinchas Tal",
+  color: "#E05A2B",
+  scheduledDays: [],
+  rate: 30
+}];
 
-const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const COLORS    = ["#4f9cf9","#f97b4f","#a78bfa","#34d399","#f472b6","#fbbf24","#60a5fa"];
+// ── Secure ID generation (fix 4.1) ─────────────────────────────
+const genId = () => typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-const DEFAULT_STUDENTS = [
-  { id:"s1", name:"Shnaur Zalmen Tal", color:"#4f9cf9", scheduledDays:[], rate:30 },
-  { id:"s2", name:"Pinchas Tal",       color:"#f97b4f", scheduledDays:[], rate:30 },
-];
-
+// ── Storage with error surfacing (fix 3.2) ──────────────────────
 const store = {
-  get: (k)   => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):null; } catch { return null; } },
-  set: (k,v) => { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} },
+  get: k => {
+    try {
+      const v = localStorage.getItem(k);
+      return v ? JSON.parse(v) : null;
+    } catch {
+      return null;
+    }
+  },
+  set: (k, v) => {
+    try {
+      localStorage.setItem(k, JSON.stringify(v));
+      return true;
+    } catch (e) {
+      if (e.name === "QuotaExceededError") return "quota";
+      return false;
+    }
+  }
 };
-
-const todayStr    = () => new Date().toISOString().split("T")[0];
+const todayStr = () => new Date().toISOString().split("T")[0];
 const todayDayIdx = () => new Date().getDay();
-const fmtDate     = (d) => new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+const fmtDate = d => new Date(d + "T12:00:00").toLocaleDateString("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric"
+});
+const fmtShort = d => new Date(d + "T12:00:00").toLocaleDateString("en-US", {
+  month: "short",
+  day: "numeric"
+});
 
-const parseImportLine = (line) => {
-  const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
-    january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
-  const clean = line.trim().toLowerCase().replace(/(\d+)(st|nd|rd|th)/,"$1");
+// ── Sanitize to prevent formula injection in Sheets (fix 2.1) ───
+const sanitize = s => {
+  if (typeof s !== "string") return s;
+  return s.replace(/^[=+\-@\t\r]/, "'$&");
+};
+const parseImportLine = line => {
+  const months = {
+    jan: 0,
+    feb: 1,
+    mar: 2,
+    apr: 3,
+    may: 4,
+    jun: 5,
+    jul: 6,
+    aug: 7,
+    sep: 8,
+    oct: 9,
+    nov: 10,
+    dec: 11,
+    january: 0,
+    february: 1,
+    march: 2,
+    april: 3,
+    june: 5,
+    july: 6,
+    august: 7,
+    september: 8,
+    october: 9,
+    november: 10,
+    december: 11
+  };
+  const clean = line.trim().toLowerCase().replace(/(\d+)(st|nd|rd|th)/, "$1");
   const parts = clean.split(/\s+/);
   if (parts.length < 2) return null;
-  const month = months[parts[0]]; if (month === undefined) return null;
-  const day = parseInt(parts[1]); if (isNaN(day)) return null;
+  const month = months[parts[0]];
+  if (month === undefined) return null;
+  const day = parseInt(parts[1]);
+  if (isNaN(day)) return null;
   const year = new Date().getFullYear();
-  const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-  const complete = !parts.includes("pending");
-  const paid     = parts.includes("paid");
-  return { dateStr, complete, paid };
+  const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  return {
+    dateStr,
+    complete: !parts.includes("pending"),
+    paid: parts.includes("paid")
+  };
 };
 
-// ── FIXED: strips outer quotes Google Sheets adds to cells containing tabs ──
+// ── Advanced import: handles tabs, pipes, and Google Sheets quotes ──
 const parseSpreadsheetRow = (row, students) => {
-  // Google Sheets wraps cells containing tabs in double-quotes when copying.
-  // Strip those outer quotes and unescape any "" inside before splitting.
   let clean = row.trim();
   if (clean.startsWith('"') && clean.endsWith('"')) {
     clean = clean.slice(1, -1).replace(/""/g, '"');
   }
-
-  const cols = clean.split('\t').map(c => c.trim());
+  let cols = clean.split('\t').map(c => c.trim());
+  if (cols.length < 3) {
+    cols = clean.split('|').map(c => c.trim());
+    if (cols.length > 0 && cols[cols.length - 1] === '') cols.pop();
+  }
   if (cols.length < 2) return null;
   const [dateStr, studentName, completeStr, paidStr, amountStr, notes] = cols;
   if (!dateStr || !studentName) return null;
-
   const st = students.find(s => s.name.toLowerCase() === studentName.toLowerCase());
   if (!st) return null;
-
-  const complete = ['true','yes','1','complete'].includes(completeStr?.toLowerCase());
-  const paid     = ['true','yes','1','paid'].includes(paidStr?.toLowerCase());
-  // Strip $ or , before parsing so "$30" and "30" both work
-  const amount   = parseFloat(String(amountStr || '').replace(/[$,]/g, '')) || st.rate;
-
-  return { dateStr, studentId: st.id, complete, paid, amount, notes: notes || "" };
+  const complete = ['true', 'yes', '1', 'complete'].includes(completeStr?.toLowerCase());
+  const paid = ['true', 'yes', '1', 'paid'].includes(paidStr?.toLowerCase());
+  const amount = parseFloat(String(amountStr || '').replace(/[$,]/g, '')) || st.rate;
+  return {
+    dateStr,
+    studentId: st.id,
+    complete,
+    paid,
+    amount,
+    notes: notes || ""
+  };
 };
 
-// ── Sheets sync ────────────────────────────────────────────────
-const postToSheets = async (payload) => {
+// ── Sheets sync — no-cors is required for Google Apps Script.
+//    GAS redirects POST requests (302) and browsers cannot read CORS
+//    headers on the redirected response. This is a GAS limitation, not
+//    a code bug. We inform the user it's "fire and forget" accordingly.
+const postToSheets = async payload => {
   const url = window.SHEETS_WEBHOOK_URL;
-  if (!url || url.includes("PASTE")) return { skipped: true };
-
+  if (!url || url.includes("PASTE")) return {
+    skipped: true
+  };
   try {
     await fetch(url, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        ...payload,
+        // Sanitize notes/names before sending to Sheets
+        session: payload.session ? {
+          ...payload.session,
+          notes: sanitize(payload.session.notes),
+          studentName: sanitize(payload.session.studentName)
+        } : undefined
+      })
     });
-    return { status: "ok" };
+    return {
+      status: "ok"
+    };
   } catch (e) {
-    console.warn("Sheets sync error:", e);
-    return { error: e.message };
+    return {
+      error: e.message
+    };
   }
 };
-
-const C   = { bg:"#0d1117", card:"rgba(255,255,255,0.04)", border:"rgba(255,255,255,0.08)", text:"#e6edf3", muted:"#8b949e", accent:"#58a6ff" };
-const INP = (x={}) => ({ background:"#21262d", border:`1px solid ${C.border}`, borderRadius:"8px", padding:"9px 13px", color:C.text, fontSize:"14px", outline:"none", fontFamily:"'Nunito',sans-serif", ...x });
-const TAG = { fontFamily:"'DM Mono',monospace", fontSize:"10px", letterSpacing:"0.14em", textTransform:"uppercase", padding:"3px 10px", borderRadius:"4px", fontWeight:500, cursor:"pointer" };
-const BTN = (x={}) => ({ border:"none", borderRadius:"8px", cursor:"pointer", fontFamily:"'Nunito',sans-serif", fontWeight:800, ...x });
-
 function App() {
-  const [students,       setStudents]       = useState(DEFAULT_STUDENTS);
-  const [sessions,       setSessions]       = useState([]);
-  const [loaded,         setLoaded]         = useState(false);
-  const [tab,            setTab]            = useState(tabFromLocation);
-  const [saveMsg,        setSaveMsg]        = useState("");
-  const [syncMsg,        setSyncMsg]        = useState("");
-  const [form,           setForm]           = useState({studentId:"s1",date:todayStr(),notes:"",complete:true});
+  const [students, setStudents] = useState(DEFAULT_STUDENTS);
+  const [sessions, setSessions] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [tab, setTab] = useState(tabFromLocation);
+  const [toast, setToast] = useState({
+    msg: "",
+    type: "info"
+  });
+  const [form, setForm] = useState({
+    studentId: "s1",
+    date: todayStr(),
+    notes: "",
+    complete: true
+  });
   const [editingStudent, setEditingStudent] = useState(null);
   const [showAddStudent, setShowAddStudent] = useState(false);
-  const [newStudent,     setNewStudent]     = useState({name:"",rate:30,color:COLORS[0],scheduledDays:[]});
-  const [filterStudent,  setFilterStudent]  = useState("all");
-  const [filterPaid,     setFilterPaid]     = useState("all");
-  const [showBulk,       setShowBulk]       = useState(false);
-  const [bulkText,       setBulkText]       = useState("");
-  const [bulkMode,       setBulkMode]       = useState("simple");
-  const [bulkStudentId,  setBulkStudentId]  = useState("");
-  const [bulkResult,     setBulkResult]     = useState(null);
-  const [showExport,     setShowExport]     = useState(false);
-
+  const [newStudent, setNewStudent] = useState({
+    name: "",
+    rate: 30,
+    color: COLORS[0],
+    scheduledDays: []
+  });
+  const [filterStudent, setFilterStudent] = useState("all");
+  const [filterPaid, setFilterPaid] = useState("all");
+  const [showBulk, setShowBulk] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [bulkMode, setBulkMode] = useState("simple");
+  const [bulkStudentId, setBulkStudentId] = useState("");
+  const [bulkResult, setBulkResult] = useState(null);
+  const [showExport, setShowExport] = useState(false);
   useEffect(() => {
-    const ss = store.get("tt-sessions"); if (ss) setSessions(ss);
-    const st = store.get("tt-students"); if (st) setStudents(st);
+    const ss = store.get("tt-sessions");
+    if (ss) setSessions(ss);
+    const st = store.get("tt-students");
+    if (st) setStudents(st);
     setLoaded(true);
   }, []);
-
   useEffect(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.get("tab") !== tab) {
@@ -166,479 +318,1193 @@ function App() {
       window.history.replaceState({}, "", url);
     }
   }, [tab]);
-
   useEffect(() => {
-    const handlePopState = () => {
-      const nextTab = tabFromLocation();
-      setTab((current) => (current === nextTab ? current : nextTab));
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    const fn = () => setTab(tabFromLocation());
+    window.addEventListener("popstate", fn);
+    return () => window.removeEventListener("popstate", fn);
   }, []);
 
-  const flash = (msg, setter=setSaveMsg, ms=1500) => { setter(msg); setTimeout(()=>setter(""), ms); };
-
-  const persist = (newSessions, newStudents) => {
-    if (newSessions != null) { store.set("tt-sessions", newSessions); setSessions(newSessions); }
-    if (newStudents != null) { store.set("tt-students", newStudents); setStudents(newStudents); }
-    flash("Saved ✓");
+  // ── useMemo for derived stats — prevents recalculating on every keystroke (fix 3.1) ──
+  const {
+    totalDone,
+    totalEarned,
+    totalOwed
+  } = useMemo(() => {
+    let done = 0,
+      earned = 0,
+      owed = 0;
+    sessions.forEach(s => {
+      if (s.complete) {
+        done++;
+        if (s.paid) earned += s.amount;else owed += s.amount;
+      }
+    });
+    return {
+      totalDone: done,
+      totalEarned: earned,
+      totalOwed: owed
+    };
+  }, [sessions]);
+  const filteredSessions = useMemo(() => sessions.filter(s => {
+    if (filterStudent !== "all" && s.studentId !== filterStudent) return false;
+    if (filterPaid === "paid" && !s.paid) return false;
+    if (filterPaid === "unpaid" && s.paid) return false;
+    return true;
+  }), [sessions, filterStudent, filterPaid]);
+  const studentStats = useMemo(() => students.map(st => {
+    const mine = sessions.filter(s => s.studentId === st.id && s.complete);
+    return {
+      ...st,
+      count: mine.length,
+      earned: mine.filter(s => s.paid).reduce((a, s) => a + s.amount, 0),
+      owed: mine.filter(s => !s.paid).reduce((a, s) => a + s.amount, 0)
+    };
+  }), [students, sessions]);
+  const flash = (msg, type = "info", ms = 2500) => {
+    setToast({
+      msg,
+      type
+    });
+    setTimeout(() => setToast({
+      msg: "",
+      type: "info"
+    }), ms);
   };
 
-  const getStudent = (id) => students.find(s=>s.id===id) || { name:"Unknown", color:"#888", rate:30, scheduledDays:[] };
-
-  const todayDI          = todayDayIdx();
-  const todaySuggestions = students.filter(st => st.scheduledDays?.includes(todayDI));
-  const loggedToday      = (sid) => sessions.some(s => s.studentId===sid && s.date===todayStr() && s.complete);
-
-  const totalDone   = sessions.filter(s=>s.complete).length;
-  const totalEarned = sessions.filter(s=>s.complete&&s.paid).reduce((a,s)=>a+s.amount,0);
-  const totalOwed   = sessions.filter(s=>s.complete&&!s.paid).reduce((a,s)=>a+s.amount,0);
-
-  const syncToSheets = async (session, studentName, action = "log") => {
-    return postToSheets({ action, session: { ...session, studentName }, students });
+  // ── Persist with storage error surfacing (fix 3.2) ──────────
+  const persist = (ns, nst) => {
+    if (ns != null) {
+      const ok = store.set("tt-sessions", ns);
+      if (ok === "quota") {
+        flash("⚠️ Storage full — export your data now!", "error", 5000);
+        return;
+      }
+      if (ok === false) {
+        flash("⚠️ Could not save — check browser storage settings", "error", 5000);
+        return;
+      }
+      setSessions(ns);
+    }
+    if (nst != null) {
+      const ok = store.set("tt-students", nst);
+      if (ok === "quota") {
+        flash("⚠️ Storage full!", "error", 5000);
+        return;
+      }
+      setStudents(nst);
+    }
   };
-
-  const syncAllSessions = async () => {
-    flash("Syncing all sessions...", setSyncMsg, 3000);
-    const sessionsWithNames = sessions.map((session) => ({
-      ...session,
-      studentName: getStudent(session.studentId).name,
-    }));
-    const result = await postToSheets({ action: "sync_all", sessions: sessionsWithNames, students });
-    if (result?.skipped) flash("", setSyncMsg, 1);
-    else if (result?.error) flash(`Sync failed: ${result.error}`, setSyncMsg, 3500);
-    else flash("Synced to Sheets", setSyncMsg, 2500);
+  const getStudent = id => students.find(s => s.id === id) || {
+    name: "Unknown",
+    color: "#999",
+    rate: 30,
+    scheduledDays: []
   };
-
+  const todayDI = todayDayIdx();
+  const todaySuggestions = useMemo(() => students.filter(st => st.scheduledDays?.includes(todayDI)), [students, todayDI]);
+  const loggedToday = sid => sessions.some(s => s.studentId === sid && s.date === todayStr() && s.complete);
   const doSync = async (session, studentName, action) => {
-    flash("Syncing...", setSyncMsg, 2000);
-    const result = await syncToSheets(session, studentName, action);
-    if (result?.skipped) flash("", setSyncMsg, 1);
-    else flash("Sent to Sheets ✓", setSyncMsg, 2500);
+    await postToSheets({
+      action,
+      session: {
+        ...session,
+        studentName
+      },
+      students
+    });
   };
-
-  const logSession = async (overrides={}) => {
-    const merged = { ...form, ...overrides };
+  const syncAll = async () => {
+    flash("Syncing to Sheets…", "info", 6000);
+    const sessionsWithNames = sessions.map(s => ({
+      ...s,
+      studentName: getStudent(s.studentId).name
+    }));
+    const result = await postToSheets({
+      action: "sync_all",
+      sessions: sessionsWithNames,
+      students
+    });
+    if (result?.error) flash(`Sync error: ${result.error}`, "error");else flash("Sent to Sheets (fire & forget — verify in your Sheet)", "info", 3500);
+  };
+  const logSession = async (overrides = {}) => {
+    const merged = {
+      ...form,
+      ...overrides
+    };
     if (!merged.studentId || !merged.date) return;
     const st = getStudent(merged.studentId);
-    const session = { id:Date.now().toString(), studentId:merged.studentId, date:merged.date, complete:merged.complete, paid:false, notes:merged.notes||"", amount:st.rate??30 };
-    const updated = [session, ...sessions].sort((a,b)=>b.date.localeCompare(a.date));
+    const session = {
+      id: genId(),
+      studentId: merged.studentId,
+      date: merged.date,
+      complete: merged.complete,
+      paid: false,
+      notes: merged.notes || "",
+      amount: st.rate ?? 30
+    };
+    const updated = [session, ...sessions].sort((a, b) => b.date.localeCompare(a.date));
     persist(updated, null);
-    setForm({ studentId:merged.studentId, date:todayStr(), notes:"", complete:true });
+    setForm({
+      studentId: merged.studentId,
+      date: todayStr(),
+      notes: "",
+      complete: true
+    });
     setTab("history");
+    flash("Session logged ✓");
     doSync(session, st.name, "log");
   };
-
-  const quickLog = async (studentId) => {
-    const st = getStudent(studentId);
-    const session = { id:Date.now().toString(), studentId, date:todayStr(), complete:true, paid:false, notes:"", amount:st.rate??30 };
-    const updated = [session, ...sessions].sort((a,b)=>b.date.localeCompare(a.date));
+  const quickLog = sid => {
+    const st = getStudent(sid);
+    const session = {
+      id: genId(),
+      studentId: sid,
+      date: todayStr(),
+      complete: true,
+      paid: false,
+      notes: "",
+      amount: st.rate ?? 30
+    };
+    const updated = [session, ...sessions].sort((a, b) => b.date.localeCompare(a.date));
     persist(updated, null);
+    flash("Logged ✓");
     doSync(session, st.name, "log");
   };
-
-  const togglePaid = (id) => {
-    const u  = sessions.map(s=>s.id===id ? {...s,paid:!s.paid} : s);
-    const s  = u.find(x=>x.id===id);
+  const togglePaid = id => {
+    const u = sessions.map(s => s.id === id ? {
+      ...s,
+      paid: !s.paid
+    } : s);
+    const s = u.find(x => x.id === id);
     const st = getStudent(s.studentId);
     persist(u, null);
     doSync(s, st.name, "update_paid");
   };
-
-  const toggleComplete = (id) => { persist(sessions.map(s=>s.id===id?{...s,complete:!s.complete}:s), null); };
-  const deleteSession  = (id) => { persist(sessions.filter(s=>s.id!==id), null); };
-
+  const toggleComplete = id => persist(sessions.map(s => s.id === id ? {
+    ...s,
+    complete: !s.complete
+  } : s), null);
+  const deleteSession = id => {
+    if (!window.confirm("Delete this session?")) return;
+    persist(sessions.filter(s => s.id !== id), null);
+  };
   const saveEditStudent = () => {
     if (!editingStudent) return;
-    const u = students.map(st => st.id===editingStudent.id
-      ? {...st, name:editingStudent.name, rate:Number(editingStudent.rate), color:editingStudent.color, scheduledDays:editingStudent.scheduledDays}
-      : st);
-    persist(null, u); setEditingStudent(null);
+    const u = students.map(st => st.id === editingStudent.id ? {
+      ...st,
+      ...editingStudent,
+      rate: Number(editingStudent.rate)
+    } : st);
+    persist(null, u);
+    setEditingStudent(null);
+    flash("Saved ✓");
   };
-
-  const deleteStudent = (id) => {
-    if (!window.confirm("Delete student? Their session history stays.")) return;
-    persist(null, students.filter(s=>s.id!==id));
+  const deleteStudent = id => {
+    if (!window.confirm("Delete student? Sessions stay.")) return;
+    persist(null, students.filter(s => s.id !== id));
   };
-
   const addStudent = () => {
     if (!newStudent.name.trim()) return;
-    const ns = { id:Date.now().toString(), name:newStudent.name.trim(), color:newStudent.color, rate:Number(newStudent.rate)||30, scheduledDays:newStudent.scheduledDays };
+    const ns = {
+      id: genId(),
+      name: newStudent.name.trim(),
+      color: newStudent.color,
+      rate: Number(newStudent.rate) || 30,
+      scheduledDays: newStudent.scheduledDays
+    };
     persist(null, [...students, ns]);
-    setNewStudent({name:"",rate:30,color:COLORS[0],scheduledDays:[]}); setShowAddStudent(false);
+    setNewStudent({
+      name: "",
+      rate: 30,
+      color: COLORS[0],
+      scheduledDays: []
+    });
+    setShowAddStudent(false);
+    flash("Student added ✓");
   };
-
-  const toggleDay = (dayIdx, obj, setter) => {
+  const toggleDay = (i, obj, setter) => {
     const days = obj.scheduledDays || [];
-    setter({...obj, scheduledDays: days.includes(dayIdx) ? days.filter(d=>d!==dayIdx) : [...days,dayIdx]});
+    setter({
+      ...obj,
+      scheduledDays: days.includes(i) ? days.filter(d => d !== i) : [...days, i]
+    });
   };
-
   const runBulkImport = () => {
     if (bulkMode === "simple") {
-      if (!bulkStudentId) { setBulkResult({error:"Please select a student."}); return; }
-      const st = getStudent(bulkStudentId);
-      const lines = bulkText.split("\n").map(l=>l.trim()).filter(Boolean);
-      const imported=[]; const failed=[];
-      for (const line of lines) {
-        const parsed = parseImportLine(line);
-        if (!parsed) { failed.push(line); continue; }
-        if (sessions.some(s=>s.studentId===bulkStudentId&&s.date===parsed.dateStr)) { failed.push(`${line} (duplicate)`); continue; }
-        imported.push({ id:Date.now().toString()+Math.random(), studentId:bulkStudentId, date:parsed.dateStr, complete:parsed.complete, paid:parsed.paid, notes:"(imported)", amount:st.rate??30 });
+      if (!bulkStudentId) {
+        setBulkResult({
+          error: "Select a student first."
+        });
+        return;
       }
-      if (imported.length > 0) persist([...sessions,...imported].sort((a,b)=>b.date.localeCompare(a.date)), null);
-      setBulkResult({imported:imported.length, failed});
-    } else {
-      const lines = bulkText.split("\n").map(l=>l.trim()).filter(Boolean);
-      const imported=[]; const failed=[];
+      const st = getStudent(bulkStudentId);
+      const lines = bulkText.split("\n").map(l => l.trim()).filter(Boolean);
+      const imported = [],
+        failed = [];
       for (const line of lines) {
-        const parsed = parseSpreadsheetRow(line, students);
-        if (!parsed) { failed.push(line); continue; }
-        if (sessions.some(s=>s.studentId===parsed.studentId&&s.date===parsed.dateStr)) { failed.push(`${line} (duplicate)`); continue; }
-        imported.push({ id:Date.now().toString()+Math.random(), ...parsed, notes:parsed.notes||"(imported)" });
+        const p = parseImportLine(line);
+        if (!p) {
+          failed.push(line);
+          continue;
+        }
+        if (sessions.some(s => s.studentId === bulkStudentId && s.date === p.dateStr)) {
+          failed.push(`${line} (dup)`);
+          continue;
+        }
+        imported.push({
+          id: genId(),
+          studentId: bulkStudentId,
+          date: p.dateStr,
+          complete: p.complete,
+          paid: p.paid,
+          notes: "(imported)",
+          amount: st.rate ?? 30
+        });
+      }
+      if (imported.length > 0) persist([...sessions, ...imported].sort((a, b) => b.date.localeCompare(a.date)), null);
+      setBulkResult({
+        imported: imported.length,
+        failed
+      });
+    } else {
+      const lines = bulkText.split("\n").map(l => l.trim()).filter(Boolean);
+      const imported = [],
+        failed = [];
+      for (const line of lines) {
+        const p = parseSpreadsheetRow(line, students);
+        if (!p) {
+          failed.push(line);
+          continue;
+        }
+        if (sessions.some(s => s.studentId === p.studentId && s.date === p.dateStr)) {
+          failed.push(`${line} (dup)`);
+          continue;
+        }
+        imported.push({
+          id: genId(),
+          ...p,
+          notes: p.notes || "(imported)"
+        });
       }
       if (imported.length > 0) {
-        persist([...sessions,...imported].sort((a,b)=>b.date.localeCompare(a.date)), null);
+        persist([...sessions, ...imported].sort((a, b) => b.date.localeCompare(a.date)), null);
         imported.forEach(s => {
           const st = getStudent(s.studentId);
           doSync(s, st.name, "log");
         });
       }
-      setBulkResult({imported:imported.length, failed});
+      setBulkResult({
+        imported: imported.length,
+        failed
+      });
     }
   };
-
   const copyExport = () => {
-    const rows = [["Date","Student","Complete","Paid","Amount","Notes","Backup Import String"]];
-    [...sessions].sort((a,b)=>a.date.localeCompare(b.date)).forEach(s => {
+    const rows = [["Date", "Student", "Complete", "Paid", "Amount", "Notes", "Backup Import"]];
+    [...sessions].sort((a, b) => a.date.localeCompare(b.date)).forEach(s => {
       const st = getStudent(s.studentId);
-      const d  = new Date(s.date+"T12:00:00");
-      const mn = d.toLocaleDateString("en-US",{month:"long"});
+      const d = new Date(s.date + "T12:00:00");
+      const mn = d.toLocaleDateString("en-US", {
+        month: "long"
+      });
       const dy = d.getDate();
-      const sx = ["th","st","nd","rd"][dy%10<=3&&dy%10>=1&&![11,12,13].includes(dy%100)?dy%10:0];
-      rows.push([fmtDate(s.date), st.name, s.complete?"Yes":"No", s.paid?"Yes":"No", `$${s.amount}`, s.notes, `${mn} ${dy}${sx} ${s.complete?"complete":"pending"}${s.paid?" paid":""}`]);
+      const sx = ["th", "st", "nd", "rd"][dy % 10 <= 3 && dy % 10 >= 1 && ![11, 12, 13].includes(dy % 100) ? dy % 10 : 0];
+      rows.push([fmtDate(s.date), st.name, s.complete ? "Yes" : "No", s.paid ? "Yes" : "No", `$${s.amount}`, s.notes, `${mn} ${dy}${sx} ${s.complete ? "complete" : "pending"}${s.paid ? " paid" : ""}`]);
     });
-    navigator.clipboard.writeText(rows.map(r=>r.join("\t")).join("\n"))
-      .then(()=>flash("Copied! Paste into Google Sheets ✓", setSaveMsg, 2500));
+    navigator.clipboard.writeText(rows.map(r => r.join("\t")).join("\n")).then(() => flash("Copied — paste into Google Sheets ✓"));
   };
-
-  const filteredSessions = sessions.filter(s => {
-    if (filterStudent!=="all" && s.studentId!==filterStudent) return false;
-    if (filterPaid==="paid"   && !s.paid)  return false;
-    if (filterPaid==="unpaid" &&  s.paid)  return false;
-    return true;
-  });
-
-  const studentStats = students.map(st => {
-    const mine = sessions.filter(s=>s.studentId===st.id&&s.complete);
-    return { ...st, count:mine.length, earned:mine.filter(s=>s.paid).reduce((a,s)=>a+s.amount,0), owed:mine.filter(s=>!s.paid).reduce((a,s)=>a+s.amount,0) };
-  });
-
-  if (!loaded) return <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontFamily:"'DM Mono',monospace"}}>Loading...</div>;
-
-  return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,padding:"24px 16px"}}>
-    <div style={{maxWidth:"700px",margin:"0 auto"}}>
-
-      {/* Header */}
-      <div style={{marginBottom:"24px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"10px"}}>
-          <div>
-            <h1 style={{margin:0,fontSize:"26px",fontWeight:800,letterSpacing:"-0.5px"}}>📚 Tutor Tracker</h1>
-            <div style={{color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace",marginTop:"3px",display:"flex",gap:"12px",flexWrap:"wrap"}}>
-              {saveMsg ? <span style={{color:"#3fb950"}}>{saveMsg}</span> : <span>your sessions · your money</span>}
-              {syncMsg && <span style={{color:C.accent}}>{syncMsg}</span>}
-            </div>
-          </div>
-          <div style={{display:"flex",gap:"8px"}}>
-            <button onClick={syncAllSessions} style={{...BTN(),background:C.accent,padding:"8px 14px",color:"#000",fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>Sync</button>
-            <button onClick={()=>setShowExport(v=>!v)} style={{...BTN(),background:C.card,border:`1px solid ${C.border}`,padding:"8px 14px",color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>📤 Export</button>
-            <button onClick={()=>setShowBulk(v=>!v)} title="Bulk Import" style={{...BTN(),background:"transparent",border:"1px dashed rgba(255,255,255,0.1)",padding:"8px 10px",color:"rgba(255,255,255,0.5)",fontSize:"12px"}}>⬆</button>
-          </div>
-        </div>
-
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"10px",marginTop:"16px"}}>
-          {[{l:"Sessions Done",v:totalDone,c:C.accent},{l:"Collected",v:`$${totalEarned}`,c:"#3fb950"},{l:"Owed to You",v:`$${totalOwed}`,c:totalOwed>0?"#f78166":"#3fb950"}].map(({l,v,c})=>(
-            <div key={l} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"10px",padding:"14px",textAlign:"center"}}>
-              <div style={{fontSize:"22px",fontWeight:800,color:c}}>{v}</div>
-              <div style={{fontSize:"11px",color:C.muted,fontFamily:"'DM Mono',monospace",marginTop:"2px"}}>{l}</div>
-            </div>
-          ))}
-        </div>
-
-        {todaySuggestions.length>0&&(
-          <div style={{marginTop:"14px",background:"rgba(88,166,255,0.06)",border:"1px solid rgba(88,166,255,0.2)",borderRadius:"10px",padding:"14px 16px"}}>
-            <div style={{fontSize:"11px",color:C.accent,fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"10px"}}>📅 TODAY — {DAY_NAMES[todayDI].toUpperCase()}</div>
-            <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-              {todaySuggestions.map(st=>{
-                const done=loggedToday(st.id);
-                return(
-                  <div key={st.id} style={{display:"flex",alignItems:"center",gap:"8px",background:done?"rgba(63,185,80,0.1)":"rgba(255,255,255,0.04)",border:`1px solid ${done?"rgba(63,185,80,0.3)":"rgba(255,255,255,0.1)"}`,borderRadius:"8px",padding:"8px 12px"}}>
-                    <div style={{width:"8px",height:"8px",borderRadius:"50%",background:st.color}}/>
-                    <span style={{fontSize:"13px",fontWeight:700}}>{st.name}</span>
-                    {done
-                      ?<span style={{fontSize:"12px",color:"#3fb950",fontFamily:"'DM Mono',monospace"}}>✓ logged</span>
-                      :<button onClick={()=>quickLog(st.id)} style={{...BTN(),background:C.accent,padding:"4px 12px",color:"#000",fontSize:"12px"}}>Mark Done</button>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Bulk Import */}
-      {showBulk&&(
-        <div style={{background:C.card,border:"1px solid rgba(88,166,255,0.25)",borderRadius:"12px",padding:"20px",marginBottom:"20px"}}>
-          <div style={{fontWeight:800,fontSize:"15px",marginBottom:"12px"}}>⬆ Bulk Import</div>
-          <div style={{display:"flex",gap:"6px",marginBottom:"12px"}}>
-            <button onClick={()=>setBulkMode("simple")} style={{...BTN(),flex:1,padding:"7px 12px",background:bulkMode==="simple"?C.accent:"transparent",border:`1px solid ${bulkMode==="simple"?C.accent:C.border}`,color:bulkMode==="simple"?"#000":C.muted,fontSize:"12px"}}>Simple (One Student)</button>
-            <button onClick={()=>setBulkMode("spreadsheet")} style={{...BTN(),flex:1,padding:"7px 12px",background:bulkMode==="spreadsheet"?C.accent:"transparent",border:`1px solid ${bulkMode==="spreadsheet"?C.accent:C.border}`,color:bulkMode==="spreadsheet"?"#000":C.muted,fontSize:"12px"}}>Advanced (Spreadsheet)</button>
-          </div>
-          <div style={{color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace",marginBottom:"10px"}}>
-            {bulkMode==="simple"
-              ?<><span style={{color:C.accent}}>"May 7th complete"</span> or <span style={{color:C.accent}}>"May 7th complete paid"</span></>
-              :<>Copy column I (Bulk Import) from your Archive sheet and paste below</>}
-          </div>
-          {bulkMode==="simple"&&(
-            <select value={bulkStudentId} onChange={e=>setBulkStudentId(e.target.value)} style={{...INP(),marginBottom:"10px",width:"auto",minWidth:"200px"}}>
-              <option value="">Select student...</option>
-              {students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          )}
-          <textarea value={bulkText} onChange={e=>setBulkText(e.target.value)} rows={5}
-            placeholder={bulkMode==="simple" ? "May 1st complete\nMay 3rd complete paid\nMay 5th complete" : "Paste rows from Archive sheet column I here..."}
-            style={{...INP(),display:"block",resize:"vertical",marginBottom:"10px",fontFamily:"'DM Mono',monospace",fontSize:"13px"}}/>
-          <div style={{display:"flex",gap:"8px"}}>
-            <button onClick={runBulkImport} style={{...BTN(),background:C.accent,padding:"9px 20px",color:"#000"}}>Import</button>
-            <button onClick={()=>{setShowBulk(false);setBulkResult(null);setBulkText("");}} style={{...BTN(),background:"transparent",border:`1px solid ${C.border}`,padding:"9px 16px",color:C.muted,fontWeight:600}}>Cancel</button>
-          </div>
-          {bulkResult&&(
-            <div style={{marginTop:"12px",padding:"12px",borderRadius:"8px",background:"rgba(63,185,80,0.08)",border:"1px solid rgba(63,185,80,0.2)"}}>
-              {bulkResult.error?<span style={{color:"#f78166"}}>{bulkResult.error}</span>:<>
-                <div style={{color:"#3fb950",fontSize:"13px",fontFamily:"'DM Mono',monospace"}}>✓ Imported {bulkResult.imported} session{bulkResult.imported!==1?"s":""}</div>
-                {bulkResult.failed.length>0&&<div style={{color:"#f78166",fontSize:"12px",marginTop:"6px",fontFamily:"'DM Mono',monospace"}}>Skipped {bulkResult.failed.length}: {bulkResult.failed.slice(0,3).join(", ")}{bulkResult.failed.length>3?"...":""}</div>}
-              </>}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Export */}
-      {showExport&&(
-        <div style={{background:C.card,border:"1px solid rgba(88,166,255,0.2)",borderRadius:"12px",padding:"20px",marginBottom:"20px"}}>
-          <div style={{fontWeight:800,fontSize:"15px",marginBottom:"8px"}}>📤 Export to Google Sheets</div>
-          <div style={{color:C.muted,fontSize:"13px",lineHeight:1.65,marginBottom:"14px"}}>
-            Click <strong style={{color:C.text}}>Copy for Sheets</strong>, open Google Sheets, click A1, press Ctrl+V.<br/>
-            The last column is your <strong style={{color:C.text}}>Backup Import String</strong> — paste back into Bulk Import to restore without duplicating.
-          </div>
-          <div style={{display:"flex",gap:"8px"}}>
-            <button onClick={copyExport} style={{...BTN(),background:"#3fb950",padding:"10px 20px",color:"#000"}}>Copy for Sheets</button>
-            <button onClick={()=>setShowExport(false)} style={{...BTN(),background:"transparent",border:`1px solid ${C.border}`,padding:"10px 16px",color:C.muted,fontWeight:600}}>Close</button>
-          </div>
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div style={{display:"flex",gap:"4px",marginBottom:"20px",background:C.card,borderRadius:"10px",padding:"4px",border:`1px solid ${C.border}`}}>
-        {[["log","➕ Log"],["history","📋 History"],["students","👥 Students"]].map(([t,l])=>(
-          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"9px",border:"none",borderRadius:"7px",cursor:"pointer",fontFamily:"'Nunito',sans-serif",fontWeight:700,fontSize:"13px",background:tab===t?`${C.border}99`:"transparent",color:C.text,transition:"all 0.2s"}}>
-            {l}
-          </button>
-        ))}
-      </div>
-
-      {/* LOG */}
-      {tab==="log"&&(
-        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"12px",padding:"24px"}}>
-          <div style={{marginBottom:"18px",fontSize:"15px",fontWeight:700}}>Log a Session</div>
-          <div style={{marginBottom:"14px"}}>
-            <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"8px"}}>STUDENT</label>
-            <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-              {students.map(st=>(
-                <button key={st.id} onClick={()=>setForm(f=>({...f,studentId:st.id}))}
-                  style={{padding:"8px 16px",borderRadius:"8px",border:`2px solid ${form.studentId===st.id?st.color:C.border}`,background:form.studentId===st.id?`${st.color}22`:"transparent",color:st.color,fontWeight:700,cursor:"pointer"}}>
-                  {st.name} <span style={{fontSize:"11px",opacity:0.7}}>${st.rate}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div style={{marginBottom:"14px"}}>
-            <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"8px"}}>DATE</label>
-            <input type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} style={INP()}/>
-          </div>
-          <div style={{marginBottom:"14px"}}>
-            <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"8px"}}>NOTES (optional)</label>
-            <input value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="e.g. worked on fractions..." style={INP()}/>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"20px"}}>
-            <button onClick={()=>setForm(f=>({...f,complete:!f.complete}))} style={{width:"22px",height:"22px",borderRadius:"6px",border:`2px solid ${form.complete?"#3fb950":C.border}`,background:form.complete?"#3fb950":"transparent",color:"white",fontWeight:700,cursor:"pointer"}}>
-              {form.complete?"✓":""}
-            </button>
-            <span style={{fontSize:"14px",color:form.complete?"#3fb950":C.muted}}>Mark as complete</span>
-          </div>
-          <button onClick={()=>logSession()} style={{...BTN(),width:"100%",padding:"13px",background:C.accent,color:"#000",fontSize:"15px"}}>Log Session →</button>
-        </div>
-      )}
-
-      {/* HISTORY */}
-      {tab==="history"&&(
-        <div>
-          <div style={{display:"flex",gap:"8px",marginBottom:"14px",flexWrap:"wrap"}}>
-            <select value={filterStudent} onChange={e=>setFilterStudent(e.target.value)} style={{...INP(),width:"auto",minWidth:"160px"}}>
-              <option value="all">All Students</option>
-              {students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-            <select value={filterPaid} onChange={e=>setFilterPaid(e.target.value)} style={{...INP(),width:"auto"}}>
-              <option value="all">All Payments</option>
-              <option value="paid">Paid</option>
-              <option value="unpaid">Unpaid</option>
-            </select>
-          </div>
-          {filteredSessions.length===0
-            ?<div style={{textAlign:"center",color:C.muted,padding:"50px 20px",fontFamily:"'DM Mono',monospace",fontSize:"13px"}}>No sessions yet. Log your first one!</div>
-            :<div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-              {filteredSessions.map(s=>{
-                const st=getStudent(s.studentId);
-                return(
-                  <div key={s.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"10px",padding:"14px 16px",display:"flex",alignItems:"center",gap:"12px",flexWrap:"wrap",opacity:s.complete?"1":"0.6"}}>
-                    <div style={{width:"10px",height:"10px",borderRadius:"50%",background:st.color,flexShrink:0}}/>
-                    <div style={{flex:1,minWidth:"120px"}}>
-                      <div style={{fontWeight:700,fontSize:"14px"}}>{st.name}</div>
-                      <div style={{color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace"}}>{fmtDate(s.date)}</div>
-                      {s.notes&&<div style={{color:C.muted,fontSize:"12px",marginTop:"2px",fontStyle:"italic"}}>{s.notes}</div>}
-                    </div>
-                    <div style={{display:"flex",gap:"6px",alignItems:"center",flexWrap:"wrap"}}>
-                      <span onClick={()=>toggleComplete(s.id)} style={{...TAG,background:s.complete?"rgba(63,185,80,0.15)":"rgba(139,148,158,0.1)",color:s.complete?"#3fb950":C.muted,border:`1px solid ${s.complete?"rgba(63,185,80,0.3)":"rgba(139,148,158,0.2)"}`,cursor:"pointer"}}>
-                        {s.complete?"✓ Done":"Pending"}
-                      </span>
-                      <span onClick={()=>togglePaid(s.id)} style={{...TAG,background:s.paid?"rgba(88,166,255,0.15)":"rgba(247,129,102,0.1)",color:s.paid?C.accent:"#f78166",border:`1px solid ${s.paid?"rgba(88,166,255,0.3)":"rgba(247,129,102,0.2)"}`,cursor:"pointer"}}>
-                        {s.paid?`💰 $${s.amount} Paid`:`⏳ $${s.amount} Owed`}
-                      </span>
-                      <button onClick={()=>deleteSession(s.id)} style={{background:"transparent",border:"none",color:C.muted,cursor:"pointer",fontSize:"14px"}}>🗑</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>}
-        </div>
-      )}
-
-      {/* STUDENTS */}
-      {tab==="students"&&(
-        <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-          {studentStats.map(st=>(
-            <div key={st.id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"12px",padding:"20px"}}>
-              {editingStudent?.id===st.id?(
-                <div>
-                  <div style={{fontWeight:800,fontSize:"15px",marginBottom:"14px",color:C.accent}}>Editing {st.name}</div>
-                  <div style={{marginBottom:"10px"}}>
-                    <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>NAME</label>
-                    <input value={editingStudent.name} onChange={e=>setEditingStudent(s=>({...s,name:e.target.value}))} style={INP()}/>
-                  </div>
-                  <div style={{marginBottom:"10px"}}>
-                    <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>RATE PER SESSION ($)</label>
-                    <input type="number" value={editingStudent.rate} onChange={e=>setEditingStudent(s=>({...s,rate:e.target.value}))} style={{...INP(),width:"120px"}}/>
-                  </div>
-                  <div style={{marginBottom:"14px"}}>
-                    <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>COLOR</label>
-                    <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
-                      <input type="color" value={editingStudent.color} onChange={e=>setEditingStudent(s=>({...s,color:e.target.value}))}/>
-                      <span style={{fontSize:"12px",fontFamily:"'DM Mono',monospace",color:editingStudent.color}}>{editingStudent.color}</span>
-                    </div>
-                  </div>
-                  <div style={{marginBottom:"14px"}}>
-                    <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"8px"}}>SCHEDULED DAYS</label>
-                    <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-                      {DAY_NAMES.map((d,i)=>{
-                        const active=editingStudent.scheduledDays?.includes(i);
-                        return<button key={i} onClick={()=>toggleDay(i,editingStudent,setEditingStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?editingStudent.color:C.border}`,background:active?`${editingStudent.color}22`:"transparent",color:active?editingStudent.color:C.muted,fontWeight:600,cursor:"pointer"}}>{d}</button>;
-                      })}
-                    </div>
-                    <div style={{color:C.muted,fontSize:"11px",marginTop:"6px",fontFamily:"'DM Mono',monospace"}}>Leave empty to hide day suggestions</div>
-                  </div>
-                  <div style={{display:"flex",gap:"8px"}}>
-                    <button onClick={saveEditStudent} style={{...BTN(),background:C.accent,padding:"9px 20px",color:"#000"}}>Save</button>
-                    <button onClick={()=>setEditingStudent(null)} style={{...BTN(),background:"transparent",border:`1px solid ${C.border}`,padding:"9px 16px",color:C.muted,fontWeight:600}}>Cancel</button>
-                  </div>
-                </div>
-              ):(
-                <>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:"8px",marginBottom:"14px"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                      <div style={{width:"12px",height:"12px",borderRadius:"50%",background:st.color}}/>
-                      <div>
-                        <div style={{fontWeight:800,fontSize:"16px"}}>{st.name}</div>
-                        <div style={{color:C.muted,fontSize:"12px",fontFamily:"'DM Mono',monospace",marginTop:"2px"}}>
-                          ${st.rate}/session {st.scheduledDays?.length>0&&<span>· {st.scheduledDays.map(d=>DAY_NAMES[d]).join(", ")}</span>}
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{display:"flex",gap:"6px"}}>
-                      <button onClick={()=>setEditingStudent({...st})} style={{...BTN(),background:"transparent",border:`1px solid ${C.border}`,padding:"6px 14px",color:C.muted,fontSize:"12px",fontWeight:600}}>Edit</button>
-                      <button onClick={()=>deleteStudent(st.id)} style={{...BTN(),background:"transparent",border:"1px solid rgba(247,129,102,0.3)",padding:"6px 14px",color:"#f78166",fontSize:"12px",fontWeight:600}}>Delete</button>
-                    </div>
-                  </div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"10px"}}>
-                    {[{l:"Sessions",v:st.count,c:st.color},{l:"Collected",v:`$${st.earned}`,c:"#3fb950"},{l:"Owed",v:`$${st.owed}`,c:st.owed>0?"#f78166":"#3fb950"}].map(({l,v,c})=>(
-                      <div key={l} style={{background:"#21262d",borderRadius:"8px",padding:"12px",textAlign:"center"}}>
-                        <div style={{fontSize:"20px",fontWeight:800,color:c}}>{v}</div>
-                        <div style={{fontSize:"10px",color:C.muted,fontFamily:"'DM Mono',monospace",marginTop:"2px"}}>{l}</div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-          {showAddStudent?(
-            <div style={{background:C.card,border:`1px dashed ${C.border}`,borderRadius:"12px",padding:"20px"}}>
-              <div style={{fontWeight:800,fontSize:"15px",marginBottom:"14px"}}>Add New Student</div>
-              <div style={{marginBottom:"10px"}}>
-                <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>NAME</label>
-                <input value={newStudent.name} onChange={e=>setNewStudent(s=>({...s,name:e.target.value}))} placeholder="Student name..." style={INP()}/>
-              </div>
-              <div style={{marginBottom:"10px"}}>
-                <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>RATE ($)</label>
-                <input type="number" value={newStudent.rate} onChange={e=>setNewStudent(s=>({...s,rate:e.target.value}))} style={{...INP(),width:"120px"}}/>
-              </div>
-              <div style={{marginBottom:"14px"}}>
-                <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"6px"}}>COLOR</label>
-                <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
-                  <input type="color" value={newStudent.color} onChange={e=>setNewStudent(s=>({...s,color:e.target.value}))}/>
-                  <span style={{fontSize:"12px",fontFamily:"'DM Mono',monospace",color:newStudent.color}}>{newStudent.color}</span>
-                </div>
-              </div>
-              <div style={{marginBottom:"14px"}}>
-                <label style={{display:"block",color:C.muted,fontSize:"11px",fontFamily:"'DM Mono',monospace",letterSpacing:"0.12em",marginBottom:"8px"}}>SCHEDULED DAYS</label>
-                <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-                  {DAY_NAMES.map((d,i)=>{
-                    const active=newStudent.scheduledDays?.includes(i);
-                    return<button key={i} onClick={()=>toggleDay(i,newStudent,setNewStudent)} style={{padding:"6px 12px",borderRadius:"6px",border:`2px solid ${active?newStudent.color:C.border}`,background:active?`${newStudent.color}22`:"transparent",color:active?newStudent.color:C.muted,fontWeight:600,cursor:"pointer"}}>{d}</button>;
-                  })}
-                </div>
-              </div>
-              <div style={{display:"flex",gap:"8px"}}>
-                <button onClick={addStudent} style={{...BTN(),background:C.accent,padding:"9px 20px",color:"#000"}}>Add</button>
-                <button onClick={()=>setShowAddStudent(false)} style={{...BTN(),background:"transparent",border:`1px solid ${C.border}`,padding:"9px 16px",color:C.muted,fontWeight:600}}>Cancel</button>
-              </div>
-            </div>
-          ):(
-            <button onClick={()=>setShowAddStudent(true)} style={{...BTN(),background:"transparent",border:`2px dashed ${C.border}`,borderRadius:"12px",padding:"16px",color:C.muted,fontSize:"14px",fontWeight:600}}>
-              + Add New Student
-            </button>
-          )}
-        </div>
-      )}
-
-      <div style={{marginTop:"30px",textAlign:"center",color:"rgba(255,255,255,0.08)",fontSize:"11px",fontFamily:"'DM Mono',monospace"}}>
-        saves automatically · data persists in your browser · PWA ready 📱
-      </div>
-    </div>
-    </div>
-  );
+  if (!loaded) return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "var(--bg)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "40px",
+      marginBottom: "12px"
+    }
+  }, "\uD83D\uDCDA"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--text3)",
+      fontWeight: 600
+    }
+  }, "Loading\u2026")));
+  const toastColor = toast.type === "error" ? "#DC2626" : toast.type === "warn" ? "#D97706" : "#111827";
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: "600px",
+      margin: "0 auto",
+      padding: "16px 14px"
+    }
+  }, toast.msg && /*#__PURE__*/React.createElement("div", {
+    className: "fade-up",
+    style: {
+      position: "fixed",
+      top: "16px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      zIndex: 999,
+      background: toastColor,
+      color: "white",
+      padding: "10px 20px",
+      borderRadius: "999px",
+      fontSize: "14px",
+      fontWeight: 600,
+      boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+      whiteSpace: "nowrap",
+      maxWidth: "90vw",
+      textAlign: "center"
+    }
+  }, toast.msg), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: "16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: "28px"
+    }
+  }, "\uD83D\uDCDA"), /*#__PURE__*/React.createElement("h1", {
+    style: {
+      fontSize: "22px",
+      fontWeight: 800,
+      letterSpacing: "-0.5px"
+    }
+  }, "Tutor Tracker")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: syncAll,
+    className: "btn btn-primary",
+    style: {
+      padding: "8px 14px",
+      fontSize: "13px"
+    }
+  }, "\u2191 Sync"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowExport(v => !v),
+    className: "btn btn-ghost",
+    style: {
+      padding: "8px 12px",
+      fontSize: "13px"
+    }
+  }, "\uD83D\uDCE4"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowBulk(v => !v),
+    style: {
+      background: "transparent",
+      border: "1.5px dashed var(--border)",
+      borderRadius: "var(--r-xs)",
+      padding: "8px 10px",
+      cursor: "pointer",
+      color: "var(--text3)",
+      fontSize: "13px"
+    }
+  }, "\u2B06"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "10px"
+    }
+  }, [{
+    l: "Sessions",
+    v: totalDone,
+    c: "var(--primary)"
+  }, {
+    l: "Collected",
+    v: `$${totalEarned}`,
+    c: "var(--green)"
+  }, {
+    l: "Owed",
+    v: `$${totalOwed}`,
+    c: totalOwed > 0 ? "var(--red)" : "var(--green)"
+  }].map(({
+    l,
+    v,
+    c
+  }) => /*#__PURE__*/React.createElement("div", {
+    key: l,
+    className: "stat-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-value",
+    style: {
+      color: c
+    }
+  }, v), /*#__PURE__*/React.createElement("div", {
+    className: "stat-label"
+  }, l)))), todaySuggestions.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "today-banner fade-up",
+    style: {
+      marginTop: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "11px",
+      fontWeight: 700,
+      letterSpacing: "0.1em",
+      opacity: 0.8,
+      marginBottom: "10px"
+    }
+  }, "\uD83D\uDCC5 TODAY \u2014 ", DAY_NAMES[todayDI].toUpperCase()), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px",
+      flexWrap: "wrap"
+    }
+  }, todaySuggestions.map(st => {
+    const done = loggedToday(st.id);
+    return /*#__PURE__*/React.createElement("div", {
+      key: st.id,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        background: "rgba(255,255,255,0.15)",
+        borderRadius: "10px",
+        padding: "8px 14px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: "8px",
+        height: "8px",
+        borderRadius: "50%",
+        background: "white",
+        opacity: 0.8
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: "14px",
+        fontWeight: 700
+      }
+    }, st.name), done ? /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: "12px",
+        opacity: 0.9,
+        fontWeight: 600
+      }
+    }, "\u2713 Done") : /*#__PURE__*/React.createElement("button", {
+      onClick: () => quickLog(st.id),
+      style: {
+        background: "white",
+        border: "none",
+        borderRadius: "8px",
+        padding: "4px 14px",
+        color: "var(--primary)",
+        fontWeight: 700,
+        fontSize: "13px",
+        cursor: "pointer"
+      }
+    }, "Mark Done"));
+  })))), showExport && /*#__PURE__*/React.createElement("div", {
+    className: "panel fade-up",
+    style: {
+      marginBottom: "14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "panel-title"
+  }, "\uD83D\uDCE4 Export to Google Sheets"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: "14px",
+      color: "var(--text2)",
+      lineHeight: 1.6,
+      marginBottom: "14px"
+    }
+  }, "Click ", /*#__PURE__*/React.createElement("strong", null, "Copy for Sheets"), " \u2192 open Google Sheets \u2192 click A1 \u2192 Ctrl+V.", /*#__PURE__*/React.createElement("br", null), "The ", /*#__PURE__*/React.createElement("strong", null, "Backup Import"), " column in column I of your Archive sheet can be pasted back into Bulk Import to restore data safely."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: copyExport,
+    className: "btn btn-primary"
+  }, "Copy for Sheets"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowExport(false),
+    className: "btn btn-ghost"
+  }, "Close"))), showBulk && /*#__PURE__*/React.createElement("div", {
+    className: "panel fade-up",
+    style: {
+      marginBottom: "14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "panel-title"
+  }, "\u2B06 Bulk Import"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "6px",
+      marginBottom: "14px"
+    }
+  }, [["simple", "Simple"], ["spreadsheet", "Spreadsheet"]].map(([m, l]) => /*#__PURE__*/React.createElement("button", {
+    key: m,
+    onClick: () => setBulkMode(m),
+    className: "btn",
+    style: {
+      flex: 1,
+      background: bulkMode === m ? "var(--primary)" : "var(--bg)",
+      color: bulkMode === m ? "white" : "var(--text2)",
+      border: `1.5px solid ${bulkMode === m ? "var(--primary)" : "var(--border)"}`
+    }
+  }, l))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: "12px",
+      color: "var(--text3)",
+      fontFamily: "'DM Mono',monospace",
+      marginBottom: "10px"
+    }
+  }, bulkMode === "simple" ? "\"May 7th complete\" · \"May 7th complete paid\"" : "Copy column I (Bulk Import) from your Archive sheet"), bulkMode === "simple" && /*#__PURE__*/React.createElement("select", {
+    value: bulkStudentId,
+    onChange: e => setBulkStudentId(e.target.value),
+    className: "inp",
+    style: {
+      marginBottom: "10px",
+      width: "auto",
+      minWidth: "200px"
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "Select student\u2026"), students.map(s => /*#__PURE__*/React.createElement("option", {
+    key: s.id,
+    value: s.id
+  }, s.name))), /*#__PURE__*/React.createElement("textarea", {
+    value: bulkText,
+    onChange: e => setBulkText(e.target.value),
+    rows: 5,
+    placeholder: bulkMode === "simple" ? "May 1st complete\nMay 3rd complete paid" : "Paste from Archive sheet column I…",
+    className: "inp",
+    style: {
+      display: "block",
+      resize: "vertical",
+      marginBottom: "12px",
+      fontFamily: "'DM Mono',monospace",
+      fontSize: "13px"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: runBulkImport,
+    className: "btn btn-primary"
+  }, "Import"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setShowBulk(false);
+      setBulkResult(null);
+      setBulkText("");
+    },
+    className: "btn btn-ghost"
+  }, "Cancel")), bulkResult && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: "12px",
+      padding: "12px",
+      borderRadius: "10px",
+      background: bulkResult.error ? "var(--red-bg)" : "var(--green-bg)"
+    }
+  }, bulkResult.error ? /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--red)",
+      fontSize: "14px"
+    }
+  }, bulkResult.error) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--green)",
+      fontWeight: 700,
+      fontSize: "14px"
+    }
+  }, "\u2713 Imported ", bulkResult.imported, " session", bulkResult.imported !== 1 ? "s" : ""), bulkResult.failed.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--red)",
+      fontSize: "12px",
+      marginTop: "4px",
+      fontFamily: "'DM Mono',monospace"
+    }
+  }, "Skipped ", bulkResult.failed.length, ": ", bulkResult.failed.slice(0, 3).join(", "), bulkResult.failed.length > 3 ? "…" : "")))), tab === "log" && /*#__PURE__*/React.createElement("div", {
+    className: "panel fade-up"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "panel-title"
+  }, "Log a Session"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Student"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px",
+      flexWrap: "wrap"
+    }
+  }, students.map(st => /*#__PURE__*/React.createElement("button", {
+    key: st.id,
+    onClick: () => setForm(f => ({
+      ...f,
+      studentId: st.id
+    })),
+    style: {
+      padding: "8px 16px",
+      borderRadius: "999px",
+      border: `2px solid ${form.studentId === st.id ? st.color : "var(--border)"}`,
+      background: form.studentId === st.id ? st.color + "18" : "transparent",
+      color: form.studentId === st.id ? st.color : "var(--text2)",
+      fontWeight: 700,
+      fontSize: "14px",
+      cursor: "pointer",
+      transition: "all 0.15s"
+    }
+  }, st.name, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 500,
+      opacity: 0.7,
+      fontSize: "12px"
+    }
+  }, "$", st.rate))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Date"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: form.date,
+    onChange: e => setForm(f => ({
+      ...f,
+      date: e.target.value
+    })),
+    className: "inp"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Notes (optional)"), /*#__PURE__*/React.createElement("input", {
+    value: form.notes,
+    onChange: e => setForm(f => ({
+      ...f,
+      notes: e.target.value
+    })),
+    placeholder: "e.g. worked on fractions\u2026",
+    className: "inp"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      marginBottom: "22px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setForm(f => ({
+      ...f,
+      complete: !f.complete
+    })),
+    className: `check-btn${form.complete ? " checked" : ""}`
+  }, form.complete ? "✓" : ""), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: "15px",
+      fontWeight: 600,
+      color: form.complete ? "var(--green)" : "var(--text2)"
+    }
+  }, form.complete ? "Session complete" : "Mark as complete")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => logSession(),
+    className: "btn btn-primary btn-lg",
+    style: {
+      width: "100%"
+    }
+  }, "Log Session \u2192")), tab === "history" && /*#__PURE__*/React.createElement("div", {
+    className: "fade-up"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px",
+      marginBottom: "14px",
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("select", {
+    value: filterStudent,
+    onChange: e => setFilterStudent(e.target.value),
+    className: "inp",
+    style: {
+      width: "auto",
+      minWidth: "160px"
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "all"
+  }, "All Students"), students.map(s => /*#__PURE__*/React.createElement("option", {
+    key: s.id,
+    value: s.id
+  }, s.name))), /*#__PURE__*/React.createElement("select", {
+    value: filterPaid,
+    onChange: e => setFilterPaid(e.target.value),
+    className: "inp",
+    style: {
+      width: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "all"
+  }, "All Payments"), /*#__PURE__*/React.createElement("option", {
+    value: "paid"
+  }, "Paid"), /*#__PURE__*/React.createElement("option", {
+    value: "unpaid"
+  }, "Unpaid"))), filteredSessions.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: "60px 20px",
+      color: "var(--text3)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "36px",
+      marginBottom: "12px"
+    }
+  }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 600,
+      fontSize: "15px"
+    }
+  }, "No sessions yet"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "13px",
+      marginTop: "4px"
+    }
+  }, "Log your first session in the Log tab")) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px"
+    }
+  }, filteredSessions.map(s => {
+    const st = getStudent(s.studentId);
+    return /*#__PURE__*/React.createElement("div", {
+      key: s.id,
+      className: "session-card",
+      style: {
+        opacity: s.complete ? 1 : 0.6
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "session-dot",
+      style: {
+        background: st.color
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: "110px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 700,
+        fontSize: "14px"
+      }
+    }, st.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        color: "var(--text3)",
+        fontSize: "12px",
+        marginTop: "1px",
+        fontFamily: "'DM Mono',monospace"
+      }
+    }, fmtShort(s.date)), s.notes && /*#__PURE__*/React.createElement("div", {
+      style: {
+        color: "var(--text2)",
+        fontSize: "12px",
+        marginTop: "3px",
+        fontStyle: "italic"
+      }
+    }, s.notes)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: "6px",
+        alignItems: "center",
+        flexWrap: "wrap"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      onClick: () => toggleComplete(s.id),
+      className: `badge ${s.complete ? "badge-green" : "badge-gray"}`
+    }, s.complete ? "✓ Done" : "Pending"), /*#__PURE__*/React.createElement("span", {
+      onClick: () => togglePaid(s.id),
+      className: `badge ${s.paid ? "badge-blue" : "badge-amber"}`
+    }, s.paid ? `💰 $${s.amount}` : `⏳ $${s.amount}`), /*#__PURE__*/React.createElement("button", {
+      onClick: () => deleteSession(s.id),
+      style: {
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        fontSize: "15px",
+        color: "var(--text3)",
+        padding: "2px 4px"
+      }
+    }, "\uD83D\uDDD1")));
+  }))), tab === "students" && /*#__PURE__*/React.createElement("div", {
+    className: "fade-up",
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px"
+    }
+  }, studentStats.map(st => /*#__PURE__*/React.createElement("div", {
+    key: st.id,
+    className: "student-card"
+  }, editingStudent?.id === st.id ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 800,
+      fontSize: "16px",
+      color: "var(--primary)",
+      marginBottom: "16px"
+    }
+  }, "Editing ", st.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Name"), /*#__PURE__*/React.createElement("input", {
+    value: editingStudent.name,
+    onChange: e => setEditingStudent(s => ({
+      ...s,
+      name: e.target.value
+    })),
+    className: "inp"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Rate per session ($)"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: editingStudent.rate,
+    onChange: e => setEditingStudent(s => ({
+      ...s,
+      rate: e.target.value
+    })),
+    className: "inp",
+    style: {
+      width: "120px"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Color"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "color",
+    value: editingStudent.color,
+    onChange: e => setEditingStudent(s => ({
+      ...s,
+      color: e.target.value
+    }))
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "32px",
+      height: "32px",
+      borderRadius: "8px",
+      background: editingStudent.color
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Scheduled Days"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "6px",
+      flexWrap: "wrap"
+    }
+  }, DAY_NAMES.map((d, i) => {
+    const active = editingStudent.scheduledDays?.includes(i);
+    return /*#__PURE__*/React.createElement("button", {
+      key: i,
+      onClick: () => toggleDay(i, editingStudent, setEditingStudent),
+      className: "day-btn",
+      style: {
+        background: active ? editingStudent.color + "18" : "transparent",
+        borderColor: active ? editingStudent.color : "var(--border)",
+        color: active ? editingStudent.color : "var(--text2)"
+      }
+    }, d);
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--text3)",
+      fontSize: "12px",
+      marginTop: "6px"
+    }
+  }, "Leave empty to hide day suggestions")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: saveEditStudent,
+    className: "btn btn-primary"
+  }, "Save"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setEditingStudent(null),
+    className: "btn btn-ghost"
+  }, "Cancel"))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: "16px",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "42px",
+      height: "42px",
+      borderRadius: "12px",
+      background: st.color + "20",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "16px",
+      height: "16px",
+      borderRadius: "50%",
+      background: st.color
+    }
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 800,
+      fontSize: "16px"
+    }
+  }, st.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--text3)",
+      fontSize: "12px",
+      marginTop: "1px"
+    }
+  }, "$", st.rate, "/session", st.scheduledDays?.length > 0 ? ` · ${st.scheduledDays.map(d => DAY_NAMES[d]).join(", ")}` : ""))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "6px",
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setEditingStudent({
+      ...st
+    }),
+    className: "btn btn-ghost",
+    style: {
+      padding: "6px 12px",
+      fontSize: "13px"
+    }
+  }, "Edit"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => deleteStudent(st.id),
+    className: "btn btn-danger",
+    style: {
+      padding: "6px 12px",
+      fontSize: "13px"
+    }
+  }, "Delete"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(3,1fr)",
+      gap: "8px"
+    }
+  }, [{
+    l: "Sessions",
+    v: st.count,
+    c: st.color
+  }, {
+    l: "Collected",
+    v: `$${st.earned}`,
+    c: "var(--green)"
+  }, {
+    l: "Owed",
+    v: `$${st.owed}`,
+    c: st.owed > 0 ? "var(--red)" : "var(--green)"
+  }].map(({
+    l,
+    v,
+    c
+  }) => /*#__PURE__*/React.createElement("div", {
+    key: l,
+    style: {
+      background: "var(--bg)",
+      borderRadius: "10px",
+      padding: "12px",
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "20px",
+      fontWeight: 800,
+      color: c
+    }
+  }, v), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "11px",
+      color: "var(--text3)",
+      marginTop: "2px",
+      fontWeight: 600
+    }
+  }, l))))))), showAddStudent ? /*#__PURE__*/React.createElement("div", {
+    className: "student-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 800,
+      fontSize: "16px",
+      marginBottom: "16px"
+    }
+  }, "Add New Student"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Name"), /*#__PURE__*/React.createElement("input", {
+    value: newStudent.name,
+    onChange: e => setNewStudent(s => ({
+      ...s,
+      name: e.target.value
+    })),
+    placeholder: "Student name\u2026",
+    className: "inp"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Rate ($)"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: newStudent.rate,
+    onChange: e => setNewStudent(s => ({
+      ...s,
+      rate: e.target.value
+    })),
+    className: "inp",
+    style: {
+      width: "120px"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Color"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "color",
+    value: newStudent.color,
+    onChange: e => setNewStudent(s => ({
+      ...s,
+      color: e.target.value
+    }))
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "32px",
+      height: "32px",
+      borderRadius: "8px",
+      background: newStudent.color
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Scheduled Days"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "6px",
+      flexWrap: "wrap"
+    }
+  }, DAY_NAMES.map((d, i) => {
+    const active = newStudent.scheduledDays?.includes(i);
+    return /*#__PURE__*/React.createElement("button", {
+      key: i,
+      onClick: () => toggleDay(i, newStudent, setNewStudent),
+      className: "day-btn",
+      style: {
+        background: active ? newStudent.color + "18" : "transparent",
+        borderColor: active ? newStudent.color : "var(--border)",
+        color: active ? newStudent.color : "var(--text2)"
+      }
+    }, d);
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: addStudent,
+    className: "btn btn-primary"
+  }, "Add Student"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAddStudent(false),
+    className: "btn btn-ghost"
+  }, "Cancel"))) : /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAddStudent(true),
+    style: {
+      background: "var(--surface)",
+      border: "2px dashed var(--border)",
+      borderRadius: "var(--r)",
+      padding: "18px",
+      color: "var(--text3)",
+      fontSize: "15px",
+      fontWeight: 700,
+      cursor: "pointer",
+      width: "100%",
+      transition: "all 0.15s"
+    }
+  }, "+ Add Student")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: "20px"
+    }
+  }), /*#__PURE__*/React.createElement("nav", {
+    className: "bottom-nav"
+  }, [["log", "➕", "Log"], ["history", "📋", "History"], ["students", "👥", "Students"]].map(([t, icon, l]) => /*#__PURE__*/React.createElement("button", {
+    key: t,
+    onClick: () => setTab(t),
+    className: `nav-btn${tab === t ? " active" : ""}`
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "nav-icon"
+  }, icon), /*#__PURE__*/React.createElement("span", {
+    className: "nav-label"
+  }, l), /*#__PURE__*/React.createElement("div", {
+    className: "nav-dot"
+  })))));
 }
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
+ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));</script>
 </body>
 </html>

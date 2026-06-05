@@ -11,7 +11,6 @@
   <meta name="theme-color" content="#ffffff"/>
   <link rel="manifest" href="./manifest.json"/>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <!-- React & ReactDOM UMD — no Babel needed, JSX is pre-compiled -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <style>
@@ -32,7 +31,6 @@
       --text2:      #4B5563;
       --text3:      #9CA3AF;
       --shadow-sm:  0 1px 4px rgba(0,0,0,0.07);
-      --shadow:     0 4px 24px rgba(0,0,0,0.08);
       --r:          18px;
       --r-sm:       12px;
       --r-xs:       8px;
@@ -46,45 +44,46 @@
     select option { background: white; }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
     .fade-up { animation: fadeUp 0.25s ease; }
-    .card { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
-    .inp { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--r-xs); padding: 11px 14px; font-size: 15px; color: var(--text); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-    .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,107,237,0.12); background: #fff; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: var(--r-xs); cursor: pointer; font-weight: 600; font-size: 14px; padding: 10px 18px; transition: all 0.15s; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:active { background: var(--primary-dk); transform: scale(0.98); }
-    .btn-ghost { background: transparent; color: var(--text2); border: 1.5px solid var(--border); }
-    .btn-ghost:active { background: var(--bg); }
-    .btn-danger { background: var(--red-bg); color: var(--red); border: 1.5px solid rgba(220,38,38,0.2); }
-    .btn-lg { padding: 14px 24px; font-size: 16px; font-weight: 700; border-radius: var(--r-sm); }
-    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: opacity 0.15s; }
-    .badge:active { opacity: 0.7; }
-    .badge-green { background: var(--green-bg); color: var(--green); }
-    .badge-red   { background: var(--red-bg);   color: var(--red); }
-    .badge-blue  { background: var(--primary-bg); color: var(--primary); }
-    .badge-amber { background: var(--amber-bg); color: var(--amber); }
-    .badge-gray  { background: var(--bg); color: var(--text2); border: 1px solid var(--border); }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border); display: flex; padding: 8px 0 max(12px, env(safe-area-inset-bottom)); z-index: 100; }
-    .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: var(--r-xs); transition: all 0.15s; }
-    .nav-icon { font-size: 20px; line-height: 1; }
-    .nav-label { font-size: 11px; font-weight: 600; color: var(--text3); transition: color 0.15s; }
-    .nav-btn.active .nav-label { color: var(--primary); }
-    .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--primary); opacity: 0; transition: opacity 0.15s; margin-top: -2px; }
-    .nav-btn.active .nav-dot { opacity: 1; }
-    .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
-    .day-btn { padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--border); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-    .stat-card { background: var(--surface); border-radius: var(--r-sm); border: 1px solid var(--border); padding: 16px 12px; text-align: center; flex: 1; }
-    .stat-value { font-size: 24px; font-weight: 800; line-height: 1.1; }
-    .stat-label { font-size: 11px; font-weight: 600; color: var(--text3); margin-top: 2px; }
-    .session-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .session-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .today-banner { background: linear-gradient(135deg, var(--primary) 0%, #6B7FEF 100%); border-radius: var(--r-sm); padding: 14px 16px; color: white; }
-    .student-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
-    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 22px; }
-    .panel-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; }
-    .check-btn { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; transition: all 0.15s; }
-    .check-btn.checked { background: var(--green); border-color: var(--green); color: white; }
+    .inp { width:100%; background:var(--bg); border:1.5px solid var(--border); border-radius:var(--r-xs); padding:11px 14px; font-size:15px; color:var(--text); outline:none; transition:border-color 0.15s,box-shadow 0.15s; }
+    .inp:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(79,107,237,0.12); background:#fff; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; border-radius:var(--r-xs); cursor:pointer; font-weight:600; font-size:14px; padding:10px 18px; transition:all 0.15s; }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:active { background:var(--primary-dk); transform:scale(0.98); }
+    .btn-ghost { background:transparent; color:var(--text2); border:1.5px solid var(--border); }
+    .btn-ghost:active { background:var(--bg); }
+    .btn-danger { background:var(--red-bg); color:var(--red); border:1.5px solid rgba(220,38,38,0.2); }
+    .btn-lg { padding:14px 24px; font-size:16px; font-weight:700; border-radius:var(--r-sm); }
+    .badge { display:inline-flex; align-items:center; gap:4px; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; transition:opacity 0.15s; }
+    .badge:active { opacity:0.7; }
+    .badge-green { background:var(--green-bg); color:var(--green); }
+    .badge-blue  { background:var(--primary-bg); color:var(--primary); }
+    .badge-amber { background:var(--amber-bg); color:var(--amber); }
+    .badge-gray  { background:var(--bg); color:var(--text2); border:1px solid var(--border); }
+
+    /* ── Bottom nav with pill tab indicator (Feature 1) ── */
+    .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(255,255,255,0.97); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; padding:8px 8px max(12px,env(safe-area-inset-bottom)); z-index:100; gap:4px; }
+    .nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:var(--r-xs); transition:all 0.15s; }
+    .nav-pill { width:100%; display:flex; align-items:center; justify-content:center; padding:5px 0; border-radius:10px; transition:all 0.2s; }
+    .nav-icon { font-size:20px; line-height:1; }
+    .nav-label { font-size:11px; font-weight:600; color:var(--text3); transition:color 0.15s; }
+    .nav-btn.active .nav-pill { background:var(--primary-bg); outline:2px solid var(--primary); outline-offset:-1px; }
+    .nav-btn.active .nav-label { color:var(--primary); font-weight:700; }
+
+    .section-label { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text3); margin-bottom:8px; }
+    .day-btn { padding:6px 12px; border-radius:999px; border:1.5px solid var(--border); background:transparent; color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+    .stat-card { background:var(--surface); border-radius:var(--r-sm); border:1px solid var(--border); padding:16px 12px; text-align:center; flex:1; }
+    .stat-value { font-size:24px; font-weight:800; line-height:1.1; }
+    .stat-label { font-size:11px; font-weight:600; color:var(--text3); margin-top:2px; }
+    .session-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-sm); padding:14px 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .session-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .today-banner { background:linear-gradient(135deg,var(--primary) 0%,#6B7FEF 100%); border-radius:var(--r-sm); padding:14px 16px; color:white; }
+    .student-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:20px; }
+    .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:22px; }
+    .panel-title { font-size:17px; font-weight:700; margin-bottom:18px; }
+    .check-btn { width:24px; height:24px; border-radius:6px; border:2px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex-shrink:0; transition:all 0.15s; }
+    .check-btn.checked { background:var(--green); border-color:var(--green); color:white; }
   </style>
 </head>
 <body>
@@ -100,10 +99,13 @@
   window.SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxgdufKcV6mn_vo4Tp9UZs6SWJTGvuibLJ-g2BvRu3tpN8z8vgTmZOuesFYZh368JRO/exec";
 </script>
 <script>
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 const {
   useState,
   useEffect,
-  useMemo
+  useMemo,
+  useRef,
+  useCallback
 } = React;
 const VALID_TABS = ["log", "history", "students"];
 const tabFromLocation = () => {
@@ -126,11 +128,7 @@ const DEFAULT_STUDENTS = [{
   scheduledDays: [],
   rate: 30
 }];
-
-// ── Secure ID generation (fix 4.1) ─────────────────────────────
 const genId = () => typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
-
-// ── Storage with error surfacing (fix 3.2) ──────────────────────
 const store = {
   get: k => {
     try {
@@ -145,8 +143,7 @@ const store = {
       localStorage.setItem(k, JSON.stringify(v));
       return true;
     } catch (e) {
-      if (e.name === "QuotaExceededError") return "quota";
-      return false;
+      return e.name === "QuotaExceededError" ? "quota" : false;
     }
   }
 };
@@ -161,11 +158,19 @@ const fmtShort = d => new Date(d + "T12:00:00").toLocaleDateString("en-US", {
   month: "short",
   day: "numeric"
 });
+const sanitize = s => typeof s === "string" ? s.replace(/^[=+\-@\t\r]/, "'$&") : s;
 
-// ── Sanitize to prevent formula injection in Sheets (fix 2.1) ───
-const sanitize = s => {
-  if (typeof s !== "string") return s;
-  return s.replace(/^[=+\-@\t\r]/, "'$&");
+// ── Flexible date parser — handles ISO "2026-06-04" AND
+//    raw JS Date strings like "Thu Jun 04 2026 00:00:00 GMT-0400" ──────────
+const tryParseDate = s => {
+  if (!s) return null;
+  const t = s.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+  const d = new Date(t);
+  if (!isNaN(d.getTime())) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  return null;
 };
 const parseImportLine = line => {
   const months = {
@@ -209,7 +214,7 @@ const parseImportLine = line => {
   };
 };
 
-// ── Advanced import: handles tabs, pipes, and Google Sheets quotes ──
+// ── Advanced parser: tabs OR pipes, quoted cells, AND flexible date formats ──
 const parseSpreadsheetRow = (row, students) => {
   let clean = row.trim();
   if (clean.startsWith('"') && clean.endsWith('"')) {
@@ -221,8 +226,12 @@ const parseSpreadsheetRow = (row, students) => {
     if (cols.length > 0 && cols[cols.length - 1] === '') cols.pop();
   }
   if (cols.length < 2) return null;
-  const [dateStr, studentName, completeStr, paidStr, amountStr, notes] = cols;
-  if (!dateStr || !studentName) return null;
+  const [rawDate, studentName, completeStr, paidStr, amountStr, notes] = cols;
+  if (!rawDate || !studentName) return null;
+
+  // Use flexible date parser to handle any format
+  const dateStr = tryParseDate(rawDate);
+  if (!dateStr) return null;
   const st = students.find(s => s.name.toLowerCase() === studentName.toLowerCase());
   if (!st) return null;
   const complete = ['true', 'yes', '1', 'complete'].includes(completeStr?.toLowerCase());
@@ -237,11 +246,6 @@ const parseSpreadsheetRow = (row, students) => {
     notes: notes || ""
   };
 };
-
-// ── Sheets sync — no-cors is required for Google Apps Script.
-//    GAS redirects POST requests (302) and browsers cannot read CORS
-//    headers on the redirected response. This is a GAS limitation, not
-//    a code bug. We inform the user it's "fire and forget" accordingly.
 const postToSheets = async payload => {
   const url = window.SHEETS_WEBHOOK_URL;
   if (!url || url.includes("PASTE")) return {
@@ -256,7 +260,6 @@ const postToSheets = async payload => {
       },
       body: JSON.stringify({
         ...payload,
-        // Sanitize notes/names before sending to Sheets
         session: payload.session ? {
           ...payload.session,
           notes: sanitize(payload.session.notes),
@@ -273,6 +276,35 @@ const postToSheets = async payload => {
     };
   }
 };
+
+// ── Long-press hook ──────────────────────────────────────────────
+function useLongPress(callback, ms = 600) {
+  const timer = useRef(null);
+  const cancel = useCallback(() => {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+  }, []);
+  const start = useCallback(e => {
+    if (e.target.closest("button,.badge")) return;
+    cancel();
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      if (navigator.vibrate) navigator.vibrate(40);
+      callback();
+    }, ms);
+  }, [callback, cancel, ms]);
+  useEffect(() => () => cancel(), [cancel]);
+  return {
+    onTouchStart: start,
+    onTouchEnd: cancel,
+    onTouchMove: cancel,
+    onMouseDown: start,
+    onMouseUp: cancel,
+    onMouseLeave: cancel
+  };
+}
 function App() {
   const [students, setStudents] = useState(DEFAULT_STUDENTS);
   const [sessions, setSessions] = useState([]);
@@ -304,6 +336,10 @@ function App() {
   const [bulkStudentId, setBulkStudentId] = useState("");
   const [bulkResult, setBulkResult] = useState(null);
   const [showExport, setShowExport] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [deleteAllStep, setDeleteAllStep] = useState(0); // 0=hidden, 1=confirm, 2=done
+  const [editingSession, setEditingSession] = useState(null); // session object to edit
+
   useEffect(() => {
     const ss = store.get("tt-sessions");
     if (ss) setSessions(ss);
@@ -323,8 +359,6 @@ function App() {
     window.addEventListener("popstate", fn);
     return () => window.removeEventListener("popstate", fn);
   }, []);
-
-  // ── useMemo for derived stats — prevents recalculating on every keystroke (fix 3.1) ──
   const {
     totalDone,
     totalEarned,
@@ -360,6 +394,9 @@ function App() {
       owed: mine.filter(s => !s.paid).reduce((a, s) => a + s.amount, 0)
     };
   }), [students, sessions]);
+  const todayDI = todayDayIdx();
+  const todaySuggestions = useMemo(() => students.filter(st => st.scheduledDays?.includes(todayDI)), [students, todayDI]);
+  const loggedToday = sid => sessions.some(s => s.studentId === sid && s.date === todayStr() && s.complete);
   const flash = (msg, type = "info", ms = 2500) => {
     setToast({
       msg,
@@ -370,17 +407,15 @@ function App() {
       type: "info"
     }), ms);
   };
-
-  // ── Persist with storage error surfacing (fix 3.2) ──────────
   const persist = (ns, nst) => {
     if (ns != null) {
       const ok = store.set("tt-sessions", ns);
       if (ok === "quota") {
-        flash("⚠️ Storage full — export your data now!", "error", 5000);
+        flash("⚠️ Storage full — export now!", "error", 5000);
         return;
       }
       if (ok === false) {
-        flash("⚠️ Could not save — check browser storage settings", "error", 5000);
+        flash("⚠️ Could not save", "error", 5000);
         return;
       }
       setSessions(ns);
@@ -400,9 +435,6 @@ function App() {
     rate: 30,
     scheduledDays: []
   };
-  const todayDI = todayDayIdx();
-  const todaySuggestions = useMemo(() => students.filter(st => st.scheduledDays?.includes(todayDI)), [students, todayDI]);
-  const loggedToday = sid => sessions.some(s => s.studentId === sid && s.date === todayStr() && s.complete);
   const doSync = async (session, studentName, action) => {
     await postToSheets({
       action,
@@ -414,17 +446,17 @@ function App() {
     });
   };
   const syncAll = async () => {
-    flash("Syncing to Sheets…", "info", 6000);
-    const sessionsWithNames = sessions.map(s => ({
+    flash("Syncing…", "info", 6000);
+    const sn = sessions.map(s => ({
       ...s,
       studentName: getStudent(s.studentId).name
     }));
-    const result = await postToSheets({
+    const r = await postToSheets({
       action: "sync_all",
-      sessions: sessionsWithNames,
+      sessions: sn,
       students
     });
-    if (result?.error) flash(`Sync error: ${result.error}`, "error");else flash("Sent to Sheets (fire & forget — verify in your Sheet)", "info", 3500);
+    if (r?.error) flash(`Sync error: ${r.error}`, "error");else flash("Sent to Sheets (verify in your Sheet)");
   };
   const logSession = async (overrides = {}) => {
     const merged = {
@@ -465,8 +497,7 @@ function App() {
       notes: "",
       amount: st.rate ?? 30
     };
-    const updated = [session, ...sessions].sort((a, b) => b.date.localeCompare(a.date));
-    persist(updated, null);
+    persist([session, ...sessions].sort((a, b) => b.date.localeCompare(a.date)), null);
     flash("Logged ✓");
     doSync(session, st.name, "log");
   };
@@ -476,9 +507,8 @@ function App() {
       paid: !s.paid
     } : s);
     const s = u.find(x => x.id === id);
-    const st = getStudent(s.studentId);
     persist(u, null);
-    doSync(s, st.name, "update_paid");
+    doSync(s, getStudent(s.studentId).name, "update_paid");
   };
   const toggleComplete = id => persist(sessions.map(s => s.id === id ? {
     ...s,
@@ -487,6 +517,32 @@ function App() {
   const deleteSession = id => {
     if (!window.confirm("Delete this session?")) return;
     persist(sessions.filter(s => s.id !== id), null);
+  };
+
+  // ── Save edited session ─────────────────────────────────────────
+  const saveEditSession = () => {
+    if (!editingSession) return;
+    const u = sessions.map(s => s.id === editingSession.id ? {
+      ...s,
+      date: editingSession.date,
+      notes: editingSession.notes,
+      amount: Number(editingSession.amount) || s.amount,
+      complete: editingSession.complete
+    } : s);
+    persist(u, null);
+    setEditingSession(null);
+    flash("Session updated ✓");
+  };
+
+  // ── Delete All ──────────────────────────────────────────────────
+  const confirmDeleteAll = () => {
+    persist([], null);
+    setDeleteAllStep(2);
+    flash("All sessions deleted", "error");
+    setTimeout(() => {
+      setDeleteAllStep(0);
+      setShowSettings(false);
+    }, 2000);
   };
   const saveEditStudent = () => {
     if (!editingStudent) return;
@@ -523,10 +579,10 @@ function App() {
     flash("Student added ✓");
   };
   const toggleDay = (i, obj, setter) => {
-    const days = obj.scheduledDays || [];
+    const d = obj.scheduledDays || [];
     setter({
       ...obj,
-      scheduledDays: days.includes(i) ? days.filter(d => d !== i) : [...days, i]
+      scheduledDays: d.includes(i) ? d.filter(x => x !== i) : [...d, i]
     });
   };
   const runBulkImport = () => {
@@ -588,10 +644,7 @@ function App() {
       }
       if (imported.length > 0) {
         persist([...sessions, ...imported].sort((a, b) => b.date.localeCompare(a.date)), null);
-        imported.forEach(s => {
-          const st = getStudent(s.studentId);
-          doSync(s, st.name, "log");
-        });
+        imported.forEach(s => doSync(s, getStudent(s.studentId).name, "log"));
       }
       setBulkResult({
         imported: imported.length,
@@ -636,7 +689,7 @@ function App() {
       fontWeight: 600
     }
   }, "Loading\u2026")));
-  const toastColor = toast.type === "error" ? "#DC2626" : toast.type === "warn" ? "#D97706" : "#111827";
+  const toastBg = toast.type === "error" ? "#DC2626" : toast.type === "warn" ? "#D97706" : "#111827";
   return /*#__PURE__*/React.createElement("div", {
     style: {
       maxWidth: "600px",
@@ -650,8 +703,8 @@ function App() {
       top: "16px",
       left: "50%",
       transform: "translateX(-50%)",
-      zIndex: 999,
-      background: toastColor,
+      zIndex: 9999,
+      background: toastBg,
       color: "white",
       padding: "10px 20px",
       borderRadius: "999px",
@@ -662,7 +715,230 @@ function App() {
       maxWidth: "90vw",
       textAlign: "center"
     }
-  }, toast.msg), /*#__PURE__*/React.createElement("div", {
+  }, toast.msg), showSettings && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.5)",
+      zIndex: 500,
+      display: "flex",
+      alignItems: "flex-end"
+    },
+    onClick: () => {
+      setShowSettings(false);
+      setDeleteAllStep(0);
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fade-up",
+    style: {
+      background: "var(--surface)",
+      borderRadius: "24px 24px 0 0",
+      padding: "24px",
+      width: "100%",
+      maxWidth: "600px",
+      margin: "0 auto"
+    },
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "36px",
+      height: "4px",
+      background: "var(--border)",
+      borderRadius: "2px",
+      margin: "0 auto 20px"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 800,
+      fontSize: "18px",
+      marginBottom: "20px"
+    }
+  }, "\u2699\uFE0F Settings"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "var(--red-bg)",
+      border: "1px solid rgba(220,38,38,0.2)",
+      borderRadius: "var(--r-sm)",
+      padding: "16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: "13px",
+      color: "var(--red)",
+      letterSpacing: "0.08em",
+      textTransform: "uppercase",
+      marginBottom: "10px"
+    }
+  }, "Danger Zone"), deleteAllStep === 0 && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setDeleteAllStep(1),
+    className: "btn",
+    style: {
+      background: "var(--red)",
+      color: "white",
+      width: "100%"
+    }
+  }, "\uD83D\uDDD1 Delete All Sessions (", sessions.length, ")"), deleteAllStep === 1 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: "15px",
+      color: "var(--red)",
+      marginBottom: "6px"
+    }
+  }, "\u26A0\uFE0F This cannot be undone"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "13px",
+      color: "var(--text2)",
+      marginBottom: "14px",
+      lineHeight: 1.5
+    }
+  }, "All ", /*#__PURE__*/React.createElement("strong", null, sessions.length), " sessions will be permanently deleted from this device. Make sure you've exported or synced to Google Sheets first."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: confirmDeleteAll,
+    className: "btn",
+    style: {
+      background: "var(--red)",
+      color: "white",
+      flex: 1,
+      fontWeight: 800
+    }
+  }, "Yes, delete everything"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setDeleteAllStep(0),
+    className: "btn btn-ghost",
+    style: {
+      flex: 1
+    }
+  }, "Cancel"))), deleteAllStep === 2 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--red)",
+      fontWeight: 700,
+      textAlign: "center",
+      padding: "8px"
+    }
+  }, "\u2713 All sessions deleted")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setShowSettings(false);
+      setDeleteAllStep(0);
+    },
+    className: "btn btn-ghost",
+    style: {
+      width: "100%",
+      marginTop: "12px"
+    }
+  }, "Close"))), editingSession && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.5)",
+      zIndex: 500,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "16px"
+    },
+    onClick: () => setEditingSession(null)
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fade-up panel",
+    style: {
+      width: "100%",
+      maxWidth: "500px"
+    },
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 800,
+      fontSize: "17px",
+      marginBottom: "18px"
+    }
+  }, "\u270F\uFE0F Edit Session"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--text3)",
+      fontSize: "13px",
+      marginBottom: "14px",
+      fontWeight: 600
+    }
+  }, getStudent(editingSession.studentId).name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Date"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: editingSession.date,
+    onChange: e => setEditingSession(s => ({
+      ...s,
+      date: e.target.value
+    })),
+    className: "inp"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Notes"), /*#__PURE__*/React.createElement("input", {
+    value: editingSession.notes,
+    onChange: e => setEditingSession(s => ({
+      ...s,
+      notes: e.target.value
+    })),
+    placeholder: "Add notes\u2026",
+    className: "inp"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Amount ($)"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: editingSession.amount,
+    onChange: e => setEditingSession(s => ({
+      ...s,
+      amount: e.target.value
+    })),
+    className: "inp",
+    style: {
+      width: "120px"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      marginBottom: "20px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setEditingSession(s => ({
+      ...s,
+      complete: !s.complete
+    })),
+    className: `check-btn${editingSession.complete ? " checked" : ""}`
+  }, editingSession.complete ? "✓" : ""), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: "14px",
+      fontWeight: 600,
+      color: editingSession.complete ? "var(--green)" : "var(--text2)"
+    }
+  }, "Complete")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: saveEditSession,
+    className: "btn btn-primary",
+    style: {
+      flex: 1
+    }
+  }, "Save Changes"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setEditingSession(null),
+    className: "btn btn-ghost"
+  }, "Cancel")))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: "16px"
     }
@@ -692,7 +968,7 @@ function App() {
   }, "Tutor Tracker")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: "8px",
+      gap: "6px",
       alignItems: "center"
     }
   }, /*#__PURE__*/React.createElement("button", {
@@ -720,7 +996,18 @@ function App() {
       color: "var(--text3)",
       fontSize: "13px"
     }
-  }, "\u2B06"))), /*#__PURE__*/React.createElement("div", {
+  }, "\u2B06"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowSettings(true),
+    style: {
+      background: "transparent",
+      border: "1.5px solid var(--border)",
+      borderRadius: "var(--r-xs)",
+      padding: "8px 10px",
+      cursor: "pointer",
+      color: "var(--text2)",
+      fontSize: "15px"
+    }
+  }, "\u2699\uFE0F"))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "10px"
@@ -828,7 +1115,7 @@ function App() {
       lineHeight: 1.6,
       marginBottom: "14px"
     }
-  }, "Click ", /*#__PURE__*/React.createElement("strong", null, "Copy for Sheets"), " \u2192 open Google Sheets \u2192 click A1 \u2192 Ctrl+V.", /*#__PURE__*/React.createElement("br", null), "The ", /*#__PURE__*/React.createElement("strong", null, "Backup Import"), " column in column I of your Archive sheet can be pasted back into Bulk Import to restore data safely."), /*#__PURE__*/React.createElement("div", {
+  }, "Click ", /*#__PURE__*/React.createElement("strong", null, "Copy for Sheets"), " \u2192 open Google Sheets \u2192 click A1 \u2192 Ctrl+V.", /*#__PURE__*/React.createElement("br", null), "Column I of your Archive sheet = Backup Import strings."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "8px"
@@ -1032,6 +1319,14 @@ function App() {
     className: "fade-up"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
+      fontSize: "11px",
+      color: "var(--text3)",
+      fontWeight: 600,
+      marginBottom: "10px",
+      paddingLeft: "2px"
+    }
+  }, "Hold a session for 0.6s to edit it"), /*#__PURE__*/React.createElement("div", {
+    style: {
       display: "flex",
       gap: "8px",
       marginBottom: "14px",
@@ -1092,13 +1387,18 @@ function App() {
     }
   }, filteredSessions.map(s => {
     const st = getStudent(s.studentId);
-    return /*#__PURE__*/React.createElement("div", {
+    const longPressProps = useLongPress(() => setEditingSession({
+      ...s
+    }), 600);
+    return /*#__PURE__*/React.createElement("div", _extends({
       key: s.id,
       className: "session-card",
       style: {
-        opacity: s.complete ? 1 : 0.6
+        opacity: s.complete ? 1 : 0.6,
+        userSelect: "none",
+        cursor: "default"
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, longPressProps), /*#__PURE__*/React.createElement("div", {
       className: "session-dot",
       style: {
         background: st.color
@@ -1484,8 +1784,7 @@ function App() {
       fontSize: "15px",
       fontWeight: 700,
       cursor: "pointer",
-      width: "100%",
-      transition: "all 0.15s"
+      width: "100%"
     }
   }, "+ Add Student")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1497,13 +1796,13 @@ function App() {
     key: t,
     onClick: () => setTab(t),
     className: `nav-btn${tab === t ? " active" : ""}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "nav-pill"
   }, /*#__PURE__*/React.createElement("span", {
     className: "nav-icon"
-  }, icon), /*#__PURE__*/React.createElement("span", {
+  }, icon)), /*#__PURE__*/React.createElement("span", {
     className: "nav-label"
-  }, l), /*#__PURE__*/React.createElement("div", {
-    className: "nav-dot"
-  })))));
+  }, l)))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));</script>
 </body>

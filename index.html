@@ -15,37 +15,22 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <style>
     :root {
-      --bg:         #F2F4F8;
-      --surface:    #FFFFFF;
-      --border:     #E4E8F0;
-      --primary:    #4F6BED;
-      --primary-dk: #3A54D8;
-      --primary-bg: #EEF1FD;
-      --green:      #16A34A;
-      --green-bg:   #DCFCE7;
-      --red:        #DC2626;
-      --red-bg:     #FEE2E2;
-      --amber:      #D97706;
-      --amber-bg:   #FEF3C7;
-      --text:       #111827;
-      --text2:      #4B5563;
-      --text3:      #9CA3AF;
-      --shadow-sm:  0 1px 4px rgba(0,0,0,0.07);
-      --r:          18px;
-      --r-sm:       12px;
-      --r-xs:       8px;
+      --bg:#F2F4F8; --surface:#FFFFFF; --border:#E4E8F0; --primary:#4F6BED; --primary-dk:#3A54D8; --primary-bg:#EEF1FD;
+      --green:#16A34A; --green-bg:#DCFCE7; --red:#DC2626; --red-bg:#FEE2E2; --amber:#D97706; --amber-bg:#FEF3C7;
+      --text:#111827; --text2:#4B5563; --text3:#9CA3AF; --shadow-sm:0 1px 4px rgba(0,0,0,0.07); --r:18px; --r-sm:12px; --r-xs:8px;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; padding-bottom: 88px; }
-    input, textarea, select, button { font-family: 'Outfit', sans-serif; }
-    input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
-    input[type="color"] { width: 44px; height: 36px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; padding: 2px; background: none; }
-    select option { background: white; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html { -webkit-tap-highlight-color:transparent; }
+    body { background:var(--bg); color:var(--text); font-family:'Outfit',sans-serif; min-height:100vh; padding-bottom:88px; }
+    input, textarea, select, button { font-family:'Outfit',sans-serif; }
+    input[type="date"]::-webkit-calendar-picker-indicator { opacity:0.5; cursor:pointer; }
+    input[type="color"] { width:44px; height:36px; border:2px solid var(--border); border-radius:8px; cursor:pointer; padding:2px; background:none; }
+    select option { background:white; }
+    code { background:var(--bg); padding:1px 5px; border-radius:4px; font-family:'DM Mono',monospace; font-size:0.9em; }
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
-    .fade-up { animation: fadeUp 0.25s ease; }
+    .fade-up { animation:fadeUp 0.25s ease; }
     .inp { width:100%; background:var(--bg); border:1.5px solid var(--border); border-radius:var(--r-xs); padding:11px 14px; font-size:15px; color:var(--text); outline:none; transition:border-color 0.15s,box-shadow 0.15s; }
     .inp:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(79,107,237,0.12); background:#fff; }
     .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; border-radius:var(--r-xs); cursor:pointer; font-weight:600; font-size:14px; padding:10px 18px; transition:all 0.15s; }
@@ -58,9 +43,9 @@
     .badge { display:inline-flex; align-items:center; gap:4px; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; transition:opacity 0.15s; }
     .badge:active { opacity:0.7; }
     .badge-green { background:var(--green-bg); color:var(--green); }
-    .badge-blue  { background:var(--primary-bg); color:var(--primary); }
+    .badge-blue { background:var(--primary-bg); color:var(--primary); }
     .badge-amber { background:var(--amber-bg); color:var(--amber); }
-    .badge-gray  { background:var(--bg); color:var(--text2); border:1px solid var(--border); }
+    .badge-gray { background:var(--bg); color:var(--text2); border:1px solid var(--border); }
     .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(255,255,255,0.97); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-top:1px solid var(--border); display:flex; padding:8px 8px max(12px,env(safe-area-inset-bottom)); z-index:100; gap:4px; }
     .nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:var(--r-xs); transition:all 0.15s; }
     .nav-pill { width:100%; display:flex; align-items:center; justify-content:center; padding:5px 0; border-radius:10px; transition:all 0.2s; }
@@ -81,10 +66,172 @@
     .panel-title { font-size:17px; font-weight:700; margin-bottom:18px; }
     .check-btn { width:24px; height:24px; border-radius:6px; border:2px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex-shrink:0; transition:all 0.15s; }
     .check-btn.checked { background:var(--green); border-color:var(--green); color:white; }
+    ol li { margin-left:0; }
   </style>
 </head>
 <body>
 <div id="root"></div>
+<script type="application/json" id="apps-script-code">// ============================================================
+// TUTOR TRACKER — Multi-User Apps Script backend
+// CONTAINER-BOUND: paste this INSIDE the Sheet it belongs to
+// (Extensions -> Apps Script). It uses the Sheet it lives in,
+// so there is NO spreadsheet ID to configure. This is what
+// makes it work for anyone who copies the template Sheet.
+// ============================================================
+
+var LIVE_SHEET_NAME    = "Live_Sessions";
+var ARCHIVE_SHEET_NAME = "Archive";
+
+var LIVE_HEADERS = ["Timestamp","Date","Student","Complete","Paid","Amount","Notes","Session ID"];
+var ARCHIVE_HEADERS = ["Timestamp","Date","Student","Complete","Paid","Amount","Notes","Session ID","Bulk Import"];
+
+var A_TS=1, A_DATE=2, A_STU=3, A_DONE=4, A_PAID=5, A_AMT=6, A_NOTES=7, A_SID=8, A_BULK=9;
+
+function doGet(e)  { return handleRequest(e); }
+function doPost(e) { return handleRequest(e); }
+
+function handleRequest(e) {
+  try {
+    var payload = parsePayload(e);
+    if (!payload) return jsonResponse({ status:"ok", message:"Tutor Tracker webhook active" });
+    var action = payload.action || "";
+    if (action === "sync_all")    return jsonResponse(syncAllSessions(payload.sessions||[], payload.students||[]));
+    if (action === "log" && payload.session)          return jsonResponse(logSingleSession(payload.session, payload.students||[]));
+    if (action === "update_paid" && payload.session)  return jsonResponse(updateLivePaid(payload.session));
+    return jsonResponse({ status:"error", message:"Unknown action: "+action });
+  } catch (err) {
+    return jsonResponse({ status:"error", message:String(err) });
+  }
+}
+
+function parsePayload(e) {
+  if (e && e.postData && e.postData.contents) return JSON.parse(e.postData.contents);
+  if (e && e.parameter && e.parameter.payload) return JSON.parse(e.parameter.payload);
+  return null;
+}
+
+function jsonResponse(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Uses the Sheet this script is bound to — no ID needed.
+function getBook() { return SpreadsheetApp.getActiveSpreadsheet(); }
+
+function getOrCreateSheet(name, headers) {
+  var book = getBook();
+  var sh = book.getSheetByName(name);
+  if (!sh) {
+    sh = book.insertSheet(name);
+    sh.getRange(1,1,1,headers.length).setValues([headers]).setFontWeight("bold");
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function sanitizeCell(v) {
+  if (typeof v === "string" && /^[=+\-@]/.test(v)) return "'" + v;
+  return v;
+}
+
+function buildBulkImport(dateStr, student, complete, paid, amount, notes) {
+  return [dateStr, student, complete?"Yes":"No", paid?"Yes":"No", amount, notes||""].join("|") + "|";
+}
+
+function studentName(students, id) {
+  for (var i=0;i<students.length;i++) if (students[i].id===id) return students[i].name;
+  return "Unknown";
+}
+
+function findRowBySessionId(sh, sidCol, sid) {
+  var last = sh.getLastRow();
+  if (last < 2) return -1;
+  var ids = sh.getRange(2, sidCol, last-1, 1).getValues();
+  for (var i=0;i<ids.length;i++) if (String(ids[i][0])===String(sid)) return i+2;
+  return -1;
+}
+
+function logSingleSession(s, students) {
+  var live = getOrCreateSheet(LIVE_SHEET_NAME, LIVE_HEADERS);
+  var arch = getOrCreateSheet(ARCHIVE_SHEET_NAME, ARCHIVE_HEADERS);
+  var name = s.studentName || studentName(students, s.studentId);
+  var now = new Date();
+
+  // Live: update if exists, else append
+  var lrow = findRowBySessionId(live, 8, s.id);
+  var liveRow = [now, s.date, sanitizeCell(name), s.complete?"Yes":"No", s.paid?"Yes":"No", s.amount, sanitizeCell(s.notes||""), s.id];
+  if (lrow > 0) live.getRange(lrow,1,1,LIVE_HEADERS.length).setValues([liveRow]);
+  else live.appendRow(liveRow);
+
+  // Archive: append only if this Session ID isn't already there
+  if (findRowBySessionId(arch, A_SID, s.id) < 0) {
+    arch.appendRow([now, s.date, sanitizeCell(name), s.complete?"Yes":"No", s.paid?"Yes":"No", s.amount,
+      sanitizeCell(s.notes||""), s.id, buildBulkImport(s.date, name, s.complete, s.paid, s.amount, s.notes)]);
+  }
+  return { status:"ok", action:"log" };
+}
+
+function updateLivePaid(s) {
+  var live = getBook().getSheetByName(LIVE_SHEET_NAME);
+  var arch = getBook().getSheetByName(ARCHIVE_SHEET_NAME);
+  var result = { live:"not_found", archive:"not_found" };
+  var now = new Date();
+
+  if (live) {
+    var lr = findRowBySessionId(live, 8, s.id);
+    if (lr > 0) {
+      live.getRange(lr,1).setValue(now);
+      live.getRange(lr,5).setValue(s.paid?"Yes":"No");
+      result.live = "updated";
+    }
+  }
+  if (arch) {
+    var ar = findRowBySessionId(arch, A_SID, s.id);
+    if (ar > 0) {
+      var row = arch.getRange(ar,1,1,ARCHIVE_HEADERS.length).getValues()[0];
+      arch.getRange(ar, A_TS).setValue(now);
+      arch.getRange(ar, A_PAID).setValue(s.paid?"Yes":"No");
+      arch.getRange(ar, A_BULK).setValue(
+        buildBulkImport(row[A_DATE-1], row[A_STU-1], row[A_DONE-1]==="Yes", s.paid, row[A_AMT-1], row[A_NOTES-1]));
+      result.archive = "updated";
+    }
+  }
+  return { status:"ok", action:"update_paid", result:result };
+}
+
+function syncAllSessions(sessions, students) {
+  var live = getOrCreateSheet(LIVE_SHEET_NAME, LIVE_HEADERS);
+  var arch = getOrCreateSheet(ARCHIVE_SHEET_NAME, ARCHIVE_HEADERS);
+  var now = new Date();
+
+  // Rewrite Live_Sessions from scratch
+  if (live.getLastRow() > 1) live.getRange(2,1,live.getLastRow()-1,LIVE_HEADERS.length).clearContent();
+  var liveRows = [];
+  for (var i=0;i<sessions.length;i++) {
+    var s = sessions[i];
+    var name = s.studentName || studentName(students, s.studentId);
+    liveRows.push([now, s.date, sanitizeCell(name), s.complete?"Yes":"No", s.paid?"Yes":"No", s.amount, sanitizeCell(s.notes||""), s.id]);
+  }
+  if (liveRows.length) live.getRange(2,1,liveRows.length,LIVE_HEADERS.length).setValues(liveRows);
+
+  // Append any new Session IDs to Archive (never clears)
+  var existing = {};
+  if (arch.getLastRow() > 1) {
+    var ids = arch.getRange(2,A_SID,arch.getLastRow()-1,1).getValues();
+    for (var k=0;k<ids.length;k++) existing[String(ids[k][0])] = true;
+  }
+  var archRows = [];
+  for (var j=0;j<sessions.length;j++) {
+    var ss = sessions[j];
+    if (existing[String(ss.id)]) continue;
+    var nm = ss.studentName || studentName(students, ss.studentId);
+    archRows.push([now, ss.date, sanitizeCell(nm), ss.complete?"Yes":"No", ss.paid?"Yes":"No", ss.amount,
+      sanitizeCell(ss.notes||""), ss.id, buildBulkImport(ss.date, nm, ss.complete, ss.paid, ss.amount, ss.notes)]);
+  }
+  if (archRows.length) arch.getRange(arch.getLastRow()+1,1,archRows.length,ARCHIVE_HEADERS.length).setValues(archRows);
+
+  return { status:"ok", action:"sync_all", live:liveRows.length, archived:archRows.length };
+}
+</script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -93,10 +240,10 @@
         .catch(e => console.warn("SW failed:", e));
     });
   }
-  window.SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxgdufKcV6mn_vo4Tp9UZs6SWJTGvuibLJ-g2BvRu3tpN8z8vgTmZOuesFYZh368JRO/exec";
+  // No hardcoded Sheet. The app sets this from each user's saved URL on mount.
+  window.SHEETS_WEBHOOK_URL = "";
 </script>
 <script>
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 const {
   useState,
   useEffect,
@@ -156,17 +303,12 @@ const fmtShort = d => new Date(d + "T12:00:00").toLocaleDateString("en-US", {
   day: "numeric"
 });
 const sanitize = s => typeof s === "string" ? s.replace(/^[=+\-@\t\r]/, "'$&") : s;
-
-// ── Flexible date parser — handles ISO "2026-06-04" AND
-//    raw JS Date strings like "Thu Jun 04 2026 00:00:00 GMT-0400" ──────────
 const tryParseDate = s => {
   if (!s) return null;
   const t = s.trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
   const d = new Date(t);
-  if (!isNaN(d.getTime())) {
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-  }
+  if (!isNaN(d.getTime())) return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   return null;
 };
 const parseImportLine = line => {
@@ -210,13 +352,9 @@ const parseImportLine = line => {
     paid: parts.includes("paid")
   };
 };
-
-// ── Advanced parser: tabs OR pipes, quoted cells, AND flexible date formats ──
 const parseSpreadsheetRow = (row, students) => {
   let clean = row.trim();
-  if (clean.startsWith('"') && clean.endsWith('"')) {
-    clean = clean.slice(1, -1).replace(/""/g, '"');
-  }
+  if (clean.startsWith('"') && clean.endsWith('"')) clean = clean.slice(1, -1).replace(/""/g, '"');
   let cols = clean.split('\t').map(c => c.trim());
   if (cols.length < 3) {
     cols = clean.split('|').map(c => c.trim());
@@ -225,8 +363,6 @@ const parseSpreadsheetRow = (row, students) => {
   if (cols.length < 2) return null;
   const [rawDate, studentName, completeStr, paidStr, amountStr, notes] = cols;
   if (!rawDate || !studentName) return null;
-
-  // Use flexible date parser to handle any format
   const dateStr = tryParseDate(rawDate);
   if (!dateStr) return null;
   const st = students.find(s => s.name.toLowerCase() === studentName.toLowerCase());
@@ -243,9 +379,12 @@ const parseSpreadsheetRow = (row, students) => {
     notes: notes || ""
   };
 };
+
+// Reads the webhook URL that the *user* saved (window global is set from
+// localStorage on mount). Empty URL => sync is skipped, app still works offline.
 const postToSheets = async payload => {
   const url = window.SHEETS_WEBHOOK_URL;
-  if (!url || url.includes("PASTE")) return {
+  if (!url || url.includes("PASTE") || !/^https:\/\/script\.google\.com\//.test(url)) return {
     skipped: true
   };
   try {
@@ -273,8 +412,6 @@ const postToSheets = async payload => {
     };
   }
 };
-
-// ── Long-press hook ──────────────────────────────────────────────
 function useLongPress(callback, ms = 600) {
   const timer = useRef(null);
   const cb = useRef(callback);
@@ -304,9 +441,6 @@ function useLongPress(callback, ms = 600) {
     onMouseLeave: cancel
   };
 }
-
-// ── SessionCard — one component per card so the hook is called
-//    correctly (NEVER inside a .map loop) ─────────────────────────
 function SessionCard({
   s,
   st,
@@ -318,14 +452,15 @@ function SessionCard({
   const longPressProps = useLongPress(() => onEdit({
     ...s
   }), 600);
-  return /*#__PURE__*/React.createElement("div", _extends({
+  return /*#__PURE__*/React.createElement("div", {
     className: "session-card",
     style: {
       opacity: s.complete ? 1 : 0.6,
       userSelect: "none",
       cursor: "default"
-    }
-  }, longPressProps), /*#__PURE__*/React.createElement("div", {
+    },
+    ...longPressProps
+  }, /*#__PURE__*/React.createElement("div", {
     className: "session-dot",
     style: {
       background: st.color
@@ -377,7 +512,7 @@ function SessionCard({
       color: "var(--text3)",
       padding: "2px 4px"
     }
-  }, "\uD83D\uDDD1")));
+  }, "🗑")));
 }
 function App() {
   const [students, setStudents] = useState(DEFAULT_STUDENTS);
@@ -411,14 +546,20 @@ function App() {
   const [bulkResult, setBulkResult] = useState(null);
   const [showExport, setShowExport] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [deleteAllStep, setDeleteAllStep] = useState(0); // 0=hidden, 1=confirm, 2=done
-  const [editingSession, setEditingSession] = useState(null); // session object to edit
-
+  const [deleteAllStep, setDeleteAllStep] = useState(0);
+  const [editingSession, setEditingSession] = useState(null);
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [webhookDraft, setWebhookDraft] = useState("");
+  const [showGuide, setShowGuide] = useState(false);
   useEffect(() => {
     const ss = store.get("tt-sessions");
     if (ss) setSessions(ss);
     const st = store.get("tt-students");
     if (st) setStudents(st);
+    const wh = store.get("tt-webhook") || "";
+    setWebhookUrl(wh);
+    setWebhookDraft(wh);
+    window.SHEETS_WEBHOOK_URL = wh; // make the saved URL live for postToSheets
     setLoaded(true);
   }, []);
   useEffect(() => {
@@ -509,6 +650,30 @@ function App() {
     rate: 30,
     scheduledDays: []
   };
+  const isConnected = webhookUrl && /^https:\/\/script\.google\.com\//.test(webhookUrl);
+  const saveWebhook = () => {
+    const u = webhookDraft.trim();
+    if (u && !/^https:\/\/script\.google\.com\/macros\/s\//.test(u)) {
+      flash("That doesn't look like a Google Apps Script URL", "error", 4000);
+      return;
+    }
+    store.set("tt-webhook", u);
+    window.SHEETS_WEBHOOK_URL = u;
+    setWebhookUrl(u);
+    flash(u ? "Google Sheet connected ✓" : "Disconnected — running offline");
+  };
+  const disconnectWebhook = () => {
+    store.set("tt-webhook", "");
+    window.SHEETS_WEBHOOK_URL = "";
+    setWebhookUrl("");
+    setWebhookDraft("");
+    flash("Disconnected — running offline");
+  };
+  const copyAppsScript = () => {
+    const el = document.getElementById("apps-script-code");
+    const code = el ? el.textContent : "";
+    navigator.clipboard.writeText(code).then(() => flash("Apps Script code copied ✓"));
+  };
   const doSync = async (session, studentName, action) => {
     await postToSheets({
       action,
@@ -520,6 +685,11 @@ function App() {
     });
   };
   const syncAll = async () => {
+    if (!isConnected) {
+      flash("Connect a Google Sheet first (⚙️ Settings)", "warn", 4000);
+      setShowSettings(true);
+      return;
+    }
     flash("Syncing…", "info", 6000);
     const sn = sessions.map(s => ({
       ...s,
@@ -548,8 +718,7 @@ function App() {
       notes: merged.notes || "",
       amount: st.rate ?? 30
     };
-    const updated = [session, ...sessions].sort((a, b) => b.date.localeCompare(a.date));
-    persist(updated, null);
+    persist([session, ...sessions].sort((a, b) => b.date.localeCompare(a.date)), null);
     setForm({
       studentId: merged.studentId,
       date: todayStr(),
@@ -592,8 +761,6 @@ function App() {
     if (!window.confirm("Delete this session?")) return;
     persist(sessions.filter(s => s.id !== id), null);
   };
-
-  // ── Save edited session ─────────────────────────────────────────
   const saveEditSession = () => {
     if (!editingSession) return;
     const u = sessions.map(s => s.id === editingSession.id ? {
@@ -607,8 +774,6 @@ function App() {
     setEditingSession(null);
     flash("Session updated ✓");
   };
-
-  // ── Delete All ──────────────────────────────────────────────────
   const confirmDeleteAll = () => {
     persist([], null);
     setDeleteAllStep(2);
@@ -757,12 +922,12 @@ function App() {
       fontSize: "40px",
       marginBottom: "12px"
     }
-  }, "\uD83D\uDCDA"), /*#__PURE__*/React.createElement("div", {
+  }, "📚"), /*#__PURE__*/React.createElement("div", {
     style: {
       color: "var(--text3)",
       fontWeight: 600
     }
-  }, "Loading\u2026")));
+  }, "Loading…")));
   const toastBg = toast.type === "error" ? "#DC2626" : toast.type === "warn" ? "#D97706" : "#111827";
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -796,7 +961,8 @@ function App() {
       background: "rgba(0,0,0,0.5)",
       zIndex: 500,
       display: "flex",
-      alignItems: "flex-end"
+      alignItems: "flex-end",
+      overflowY: "auto"
     },
     onClick: () => {
       setShowSettings(false);
@@ -810,7 +976,9 @@ function App() {
       padding: "24px",
       width: "100%",
       maxWidth: "600px",
-      margin: "0 auto"
+      margin: "0 auto",
+      maxHeight: "92vh",
+      overflowY: "auto"
     },
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("div", {
@@ -827,7 +995,113 @@ function App() {
       fontSize: "18px",
       marginBottom: "20px"
     }
-  }, "\u2699\uFE0F Settings"), /*#__PURE__*/React.createElement("div", {
+  }, "⚙️ Settings"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      border: "1px solid var(--border)",
+      borderRadius: "var(--r-sm)",
+      padding: "16px",
+      marginBottom: "14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: "14px"
+    }
+  }, "📊 Google Sheets Sync"), /*#__PURE__*/React.createElement("span", {
+    className: `badge ${isConnected ? "badge-green" : "badge-gray"}`
+  }, isConnected ? "● Connected" : "○ Offline")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "13px",
+      color: "var(--text2)",
+      lineHeight: 1.5,
+      marginBottom: "12px"
+    }
+  }, "Paste the ", /*#__PURE__*/React.createElement("strong", null, "web app URL"), " from your own Google Sheet's Apps Script. Your data backs up to ", /*#__PURE__*/React.createElement("em", null, "your"), " Sheet only."), /*#__PURE__*/React.createElement("input", {
+    value: webhookDraft,
+    onChange: e => setWebhookDraft(e.target.value),
+    placeholder: "https://script.google.com/macros/s/…/exec",
+    className: "inp",
+    style: {
+      fontFamily: "'DM Mono',monospace",
+      fontSize: "12px",
+      marginBottom: "10px"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px",
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: saveWebhook,
+    className: "btn btn-primary",
+    style: {
+      padding: "8px 16px",
+      fontSize: "13px"
+    }
+  }, "Save"), isConnected && /*#__PURE__*/React.createElement("button", {
+    onClick: disconnectWebhook,
+    className: "btn btn-ghost",
+    style: {
+      padding: "8px 16px",
+      fontSize: "13px"
+    }
+  }, "Disconnect"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowGuide(v => !v),
+    className: "btn btn-ghost",
+    style: {
+      padding: "8px 16px",
+      fontSize: "13px"
+    }
+  }, showGuide ? "Hide setup guide" : "How do I set this up?")), showGuide && /*#__PURE__*/React.createElement("div", {
+    className: "fade-up",
+    style: {
+      marginTop: "14px",
+      background: "var(--bg)",
+      borderRadius: "var(--r-xs)",
+      padding: "14px",
+      fontSize: "13px",
+      color: "var(--text2)",
+      lineHeight: 1.6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      color: "var(--text)",
+      marginBottom: "8px"
+    }
+  }, "One-time setup (~5 min)"), /*#__PURE__*/React.createElement("ol", {
+    style: {
+      paddingLeft: "18px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "7px"
+    }
+  }, /*#__PURE__*/React.createElement("li", null, "Create a new ", /*#__PURE__*/React.createElement("strong", null, "Google Sheet"), " (sheet.new)."), /*#__PURE__*/React.createElement("li", null, "In the Sheet: ", /*#__PURE__*/React.createElement("strong", null, "Extensions → Apps Script"), "."), /*#__PURE__*/React.createElement("li", null, "Delete any starter code, then paste the Tutor Tracker script.", /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: "6px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: copyAppsScript,
+    className: "btn btn-primary",
+    style: {
+      padding: "6px 12px",
+      fontSize: "12px"
+    }
+  }, "📋 Copy Apps Script code"))), /*#__PURE__*/React.createElement("li", null, "Click ", /*#__PURE__*/React.createElement("strong", null, "Deploy → New deployment"), "."), /*#__PURE__*/React.createElement("li", null, "Gear icon → ", /*#__PURE__*/React.createElement("strong", null, "Web app"), ". Set ", /*#__PURE__*/React.createElement("em", null, "Execute as: Me"), " and ", /*#__PURE__*/React.createElement("em", null, "Who has access: Anyone"), "."), /*#__PURE__*/React.createElement("li", null, "Click ", /*#__PURE__*/React.createElement("strong", null, "Deploy"), ", then ", /*#__PURE__*/React.createElement("strong", null, "Authorize access"), " (approve the permission screen)."), /*#__PURE__*/React.createElement("li", null, "Copy the ", /*#__PURE__*/React.createElement("strong", null, "Web app URL"), " (ends in ", /*#__PURE__*/React.createElement("code", null, "/exec"), ") and paste it in the box above → Save.")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: "10px",
+      fontSize: "12px",
+      color: "var(--text3)"
+    }
+  }, "The app fully works offline without this — Sheets is just an optional backup."))), /*#__PURE__*/React.createElement("div", {
     style: {
       background: "var(--red-bg)",
       border: "1px solid rgba(220,38,38,0.2)",
@@ -851,21 +1125,21 @@ function App() {
       color: "white",
       width: "100%"
     }
-  }, "\uD83D\uDDD1 Delete All Sessions (", sessions.length, ")"), deleteAllStep === 1 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "🗑 Delete All Sessions (", sessions.length, ")"), deleteAllStep === 1 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 700,
       fontSize: "15px",
       color: "var(--red)",
       marginBottom: "6px"
     }
-  }, "\u26A0\uFE0F This cannot be undone"), /*#__PURE__*/React.createElement("div", {
+  }, "⚠️ This cannot be undone"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: "13px",
       color: "var(--text2)",
       marginBottom: "14px",
       lineHeight: 1.5
     }
-  }, "All ", /*#__PURE__*/React.createElement("strong", null, sessions.length), " sessions will be permanently deleted from this device. Make sure you've exported or synced to Google Sheets first."), /*#__PURE__*/React.createElement("div", {
+  }, "All ", /*#__PURE__*/React.createElement("strong", null, sessions.length), " sessions will be permanently deleted from this device. Make sure you've exported or synced first."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "8px"
@@ -892,7 +1166,7 @@ function App() {
       textAlign: "center",
       padding: "8px"
     }
-  }, "\u2713 All sessions deleted")), /*#__PURE__*/React.createElement("button", {
+  }, "✓ All sessions deleted")), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setShowSettings(false);
       setDeleteAllStep(0);
@@ -927,7 +1201,7 @@ function App() {
       fontSize: "17px",
       marginBottom: "18px"
     }
-  }, "\u270F\uFE0F Edit Session"), /*#__PURE__*/React.createElement("div", {
+  }, "✏️ Edit Session"), /*#__PURE__*/React.createElement("div", {
     style: {
       color: "var(--text3)",
       fontSize: "13px",
@@ -960,7 +1234,7 @@ function App() {
       ...s,
       notes: e.target.value
     })),
-    placeholder: "Add notes\u2026",
+    placeholder: "Add notes…",
     className: "inp"
   })), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1033,7 +1307,7 @@ function App() {
     style: {
       fontSize: "28px"
     }
-  }, "\uD83D\uDCDA"), /*#__PURE__*/React.createElement("h1", {
+  }, "📚"), /*#__PURE__*/React.createElement("h1", {
     style: {
       fontSize: "22px",
       fontWeight: 800,
@@ -1052,14 +1326,14 @@ function App() {
       padding: "8px 14px",
       fontSize: "13px"
     }
-  }, "\u2191 Sync"), /*#__PURE__*/React.createElement("button", {
+  }, "↑ Sync"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowExport(v => !v),
     className: "btn btn-ghost",
     style: {
       padding: "8px 12px",
       fontSize: "13px"
     }
-  }, "\uD83D\uDCE4"), /*#__PURE__*/React.createElement("button", {
+  }, "📤"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowBulk(v => !v),
     style: {
       background: "transparent",
@@ -1070,7 +1344,7 @@ function App() {
       color: "var(--text3)",
       fontSize: "13px"
     }
-  }, "\u2B06"), /*#__PURE__*/React.createElement("button", {
+  }, "⬆"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowSettings(true),
     style: {
       background: "transparent",
@@ -1081,7 +1355,7 @@ function App() {
       color: "var(--text2)",
       fontSize: "15px"
     }
-  }, "\u2699\uFE0F"))), /*#__PURE__*/React.createElement("div", {
+  }, "⚙️"))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "10px"
@@ -1112,7 +1386,23 @@ function App() {
     }
   }, v), /*#__PURE__*/React.createElement("div", {
     className: "stat-label"
-  }, l)))), todaySuggestions.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, l)))), !isConnected && /*#__PURE__*/React.createElement("div", {
+    onClick: () => setShowSettings(true),
+    style: {
+      marginTop: "12px",
+      background: "var(--amber-bg)",
+      border: "1px solid rgba(217,119,6,0.25)",
+      borderRadius: "var(--r-sm)",
+      padding: "10px 14px",
+      fontSize: "13px",
+      color: "var(--amber)",
+      fontWeight: 600,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "☁️"), /*#__PURE__*/React.createElement("span", null, "Data is saved on this device only. Tap to connect a Google Sheet backup.")), todaySuggestions.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "today-banner fade-up",
     style: {
       marginTop: "12px"
@@ -1125,7 +1415,7 @@ function App() {
       opacity: 0.8,
       marginBottom: "10px"
     }
-  }, "\uD83D\uDCC5 TODAY \u2014 ", DAY_NAMES[todayDI].toUpperCase()), /*#__PURE__*/React.createElement("div", {
+  }, "📅 TODAY — ", DAY_NAMES[todayDI].toUpperCase()), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "8px",
@@ -1162,7 +1452,7 @@ function App() {
         opacity: 0.9,
         fontWeight: 600
       }
-    }, "\u2713 Done") : /*#__PURE__*/React.createElement("button", {
+    }, "✓ Done") : /*#__PURE__*/React.createElement("button", {
       onClick: () => quickLog(st.id),
       style: {
         background: "white",
@@ -1182,14 +1472,14 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "panel-title"
-  }, "\uD83D\uDCE4 Export to Google Sheets"), /*#__PURE__*/React.createElement("p", {
+  }, "📤 Export to Google Sheets"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: "14px",
       color: "var(--text2)",
       lineHeight: 1.6,
       marginBottom: "14px"
     }
-  }, "Click ", /*#__PURE__*/React.createElement("strong", null, "Copy for Sheets"), " \u2192 open Google Sheets \u2192 click A1 \u2192 Ctrl+V.", /*#__PURE__*/React.createElement("br", null), "Column I of your Archive sheet = Backup Import strings."), /*#__PURE__*/React.createElement("div", {
+  }, "Click ", /*#__PURE__*/React.createElement("strong", null, "Copy for Sheets"), " → open Google Sheets → click A1 → Ctrl+V.", /*#__PURE__*/React.createElement("br", null), "Column I of your Archive sheet = Backup Import strings."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "8px"
@@ -1207,7 +1497,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "panel-title"
-  }, "\u2B06 Bulk Import"), /*#__PURE__*/React.createElement("div", {
+  }, "⬆ Bulk Import"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "6px",
@@ -1241,7 +1531,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "Select student\u2026"), students.map(s => /*#__PURE__*/React.createElement("option", {
+  }, "Select student…"), students.map(s => /*#__PURE__*/React.createElement("option", {
     key: s.id,
     value: s.id
   }, s.name))), /*#__PURE__*/React.createElement("textarea", {
@@ -1290,7 +1580,7 @@ function App() {
       fontWeight: 700,
       fontSize: "14px"
     }
-  }, "\u2713 Imported ", bulkResult.imported, " session", bulkResult.imported !== 1 ? "s" : ""), bulkResult.failed.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "✓ Imported ", bulkResult.imported, " session", bulkResult.imported !== 1 ? "s" : ""), bulkResult.failed.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       color: "var(--red)",
       fontSize: "12px",
@@ -1362,7 +1652,7 @@ function App() {
       ...f,
       notes: e.target.value
     })),
-    placeholder: "e.g. worked on fractions\u2026",
+    placeholder: "e.g. worked on fractions…",
     className: "inp"
   })), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1389,7 +1679,7 @@ function App() {
     style: {
       width: "100%"
     }
-  }, "Log Session \u2192")), tab === "history" && /*#__PURE__*/React.createElement("div", {
+  }, "Log Session →")), tab === "history" && /*#__PURE__*/React.createElement("div", {
     className: "fade-up"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1443,7 +1733,7 @@ function App() {
       fontSize: "36px",
       marginBottom: "12px"
     }
-  }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("div", {
+  }, "📋"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 600,
       fontSize: "15px"
@@ -1709,7 +1999,7 @@ function App() {
       ...s,
       name: e.target.value
     })),
-    placeholder: "Student name\u2026",
+    placeholder: "Student name…",
     className: "inp"
   })), /*#__PURE__*/React.createElement("div", {
     style: {

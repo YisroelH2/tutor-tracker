@@ -261,13 +261,13 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const COLORS = ["#4F6BED", "#E05A2B", "#8B5CF6", "#059669", "#DB2777", "#D97706", "#0891B2"];
 const DEFAULT_STUDENTS = [{
   id: "s1",
-  name: "Shnaur Zalmen Tal",
+  name: "Student 1",
   color: "#4F6BED",
   scheduledDays: [],
   rate: 30
 }, {
   id: "s2",
-  name: "Pinchas Tal",
+  name: "Student 2",
   color: "#E05A2B",
   scheduledDays: [],
   rate: 30
@@ -551,6 +551,7 @@ function App() {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [webhookDraft, setWebhookDraft] = useState("");
   const [showGuide, setShowGuide] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   useEffect(() => {
     const ss = store.get("tt-sessions");
     if (ss) setSessions(ss);
@@ -560,6 +561,7 @@ function App() {
     setWebhookUrl(wh);
     setWebhookDraft(wh);
     window.SHEETS_WEBHOOK_URL = wh; // make the saved URL live for postToSheets
+    if (store.get("tt-banner-dismissed")) setBannerDismissed(true);
     setLoaded(true);
   }, []);
   useEffect(() => {
@@ -1386,8 +1388,7 @@ function App() {
     }
   }, v), /*#__PURE__*/React.createElement("div", {
     className: "stat-label"
-  }, l)))), !isConnected && /*#__PURE__*/React.createElement("div", {
-    onClick: () => setShowSettings(true),
+  }, l)))), !isConnected && !bannerDismissed && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: "12px",
       background: "var(--amber-bg)",
@@ -1397,12 +1398,34 @@ function App() {
       fontSize: "13px",
       color: "var(--amber)",
       fontWeight: 600,
-      cursor: "pointer",
       display: "flex",
       alignItems: "center",
       gap: "8px"
     }
-  }, /*#__PURE__*/React.createElement("span", null, "☁️"), /*#__PURE__*/React.createElement("span", null, "Data is saved on this device only. Tap to connect a Google Sheet backup.")), todaySuggestions.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "☁️"), /*#__PURE__*/React.createElement("span", {
+    onClick: () => setShowSettings(true),
+    style: {
+      flex: 1,
+      cursor: "pointer"
+    }
+  }, "Data is saved on this device only. Tap to connect a Google Sheet backup."), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      store.set("tt-banner-dismissed", true);
+      setBannerDismissed(true);
+    },
+    "aria-label": "Dismiss",
+    style: {
+      background: "transparent",
+      border: "none",
+      color: "var(--amber)",
+      fontSize: "18px",
+      fontWeight: 700,
+      cursor: "pointer",
+      lineHeight: 1,
+      padding: "0 2px",
+      flexShrink: 0
+    }
+  }, "×")), todaySuggestions.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "today-banner fade-up",
     style: {
       marginTop: "12px"

@@ -251,7 +251,7 @@ const {
   useRef,
   useCallback
 } = React;
-const VALID_TABS = ["log", "history", "students"];
+const VALID_TABS = ["log", "history", "payments", "students"];
 const tabFromLocation = () => {
   const p = new URLSearchParams(window.location.search);
   const t = p.get("tab");
@@ -261,18 +261,25 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const COLORS = ["#4F6BED", "#E05A2B", "#8B5CF6", "#059669", "#DB2777", "#D97706", "#0891B2"];
 const DEFAULT_STUDENTS = [{
   id: "s1",
-  name: "Student 1",
+  name: "אָמוֹץ · Sefer Yeshaya",
   color: "#4F6BED",
-  scheduledDays: [],
-  rate: 30,
-  learning: ""
+  scheduledDays: [1, 4],
+  rate: 18,
+  learning: "Perek 6 — shepping nachas as the kid gets his nevuah 🕊️"
 }, {
   id: "s2",
-  name: "Student 2",
+  name: "מְתוּשֶׁלַח · Bar Mitzvah Prep",
   color: "#E05A2B",
-  scheduledDays: [],
-  rate: 30,
-  learning: ""
+  scheduledDays: [0, 3],
+  rate: 18,
+  learning: "Parsha review — 956 years till the bar mitzvah, no rush ⏳"
+}, {
+  id: "s3",
+  name: "יִשַׁי · Sefer Tehillim",
+  color: "#8B5CF6",
+  scheduledDays: [2, 5],
+  rate: 18,
+  learning: "Perek 23 — nachas from the shepherd boy 🐑"
 }];
 const genId = () => typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
 const store = {
@@ -501,10 +508,12 @@ function SessionCard({
   }, /*#__PURE__*/React.createElement("span", {
     onClick: () => onToggleComplete(s.id),
     className: `badge ${s.complete ? "badge-green" : "badge-gray"}`
-  }, s.complete ? "✓ Done" : "Pending"), /*#__PURE__*/React.createElement("span", {
-    onClick: () => onTogglePaid(s.id),
-    className: `badge ${s.paid ? "badge-blue" : "badge-amber"}`
-  }, s.paid ? `💰 $${s.amount}` : `⏳ $${s.amount}`), /*#__PURE__*/React.createElement("button", {
+  }, s.complete ? "✓ Done" : "Pending"), s.complete && s.paid && /*#__PURE__*/React.createElement("span", {
+    className: "badge badge-blue",
+    style: {
+      cursor: "default"
+    }
+  }, "✓ Paid"), /*#__PURE__*/React.createElement("button", {
     onClick: () => onDelete(s.id),
     style: {
       background: "none",
@@ -555,6 +564,10 @@ function App() {
   const [webhookDraft, setWebhookDraft] = useState("");
   const [showGuide, setShowGuide] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [viewingStudent, setViewingStudent] = useState(null);
+  const [prepPrompt, setPrepPrompt] = useState(null);
+  const [historySearch, setHistorySearch] = useState("");
+  const [paymentNotes, setPaymentNotes] = useState("");
   useEffect(() => {
     const ss = store.get("tt-sessions");
     if (ss) setSessions(ss);
@@ -563,6 +576,8 @@ function App() {
     const wh = store.get("tt-webhook") || "";
     setWebhookUrl(wh);
     setWebhookDraft(wh);
+    const pn = store.get("tt-payment-notes");
+    if (pn) setPaymentNotes(pn);
     window.SHEETS_WEBHOOK_URL = wh; // make the saved URL live for postToSheets
     if (store.get("tt-banner-dismissed")) setBannerDismissed(true);
     setLoaded(true);
@@ -599,21 +614,50 @@ function App() {
       totalOwed: owed
     };
   }, [sessions]);
-  const filteredSessions = useMemo(() => sessions.filter(s => {
-    if (filterStudent !== "all" && s.studentId !== filterStudent) return false;
-    if (filterPaid === "paid" && !s.paid) return false;
-    if (filterPaid === "unpaid" && s.paid) return false;
-    return true;
-  }), [sessions, filterStudent, filterPaid]);
-  const studentStats = useMemo(() => students.map(st => {
-    const mine = sessions.filter(s => s.studentId === st.id && s.complete);
-    return {
-      ...st,
-      count: mine.length,
-      earned: mine.filter(s => s.paid).reduce((a, s) => a + s.amount, 0),
-      owed: mine.filter(s => !s.paid).reduce((a, s) => a + s.amount, 0)
-    };
-  }), [students, sessions]);
+  const thisWeekCount = useMemo(() => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 7);
+    const c = cutoff.toISOString().split("T")[0];
+    return sessions.filter(s => s.complete && s.date >= c).length;
+  }, [sessions]);
+  const unpaidSessions = useMemo(() => sessions.filter(s => s.complete && !s.paid).sort((a, b) => b.date.localeCompare(a.date)), [sessions]);
+  const filteredSessions = useMemo(() => {
+    const q = historySearch.trim().toLowerCase();
+    return sessions.filter(s => {
+      if (filterStudent !== "all" && s.studentId !== filterStudent) return false;
+      if (filterPaid === "paid" && !s.paid) return false;
+      if (filterPaid === "unpaid" && s.paid) return false;
+      if (q) {
+        const name = (students.find(x => x.id === s.studentId)?.name || "").toLowerCase();
+        if (!(s.notes || "").toLowerCase().includes(q) && !name.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [sessions, students, filterStudent, filterPaid, historySearch]);
+  const studentStats = useMemo(() => {
+    const weekCutoff = new Date();
+    weekCutoff.setDate(weekCutoff.getDate() - 7);
+    const wc = weekCutoff.toISOString().split("T")[0];
+    return students.map(st => {
+      const mine = sessions.filter(s => s.studentId === st.id && s.complete);
+      const dates = mine.map(s => s.date).sort();
+      const last = dates.length ? dates[dates.length - 1] : null;
+      let lastDays = null;
+      if (last) {
+        const diff = Math.round((Date.now() - new Date(last + "T12:00:00").getTime()) / 86400000);
+        lastDays = diff;
+      }
+      return {
+        ...st,
+        count: mine.length,
+        earned: mine.filter(s => s.paid).reduce((a, s) => a + s.amount, 0),
+        owed: mine.filter(s => !s.paid).reduce((a, s) => a + s.amount, 0),
+        thisWeek: mine.filter(s => s.date >= wc).length,
+        lastSession: last,
+        lastDays
+      };
+    });
+  }, [students, sessions]);
   const todayDI = todayDayIdx();
   const todaySuggestions = useMemo(() => students.filter(st => st.scheduledDays?.includes(todayDI)), [students, todayDI]);
   const loggedToday = sid => sessions.some(s => s.studentId === sid && s.date === todayStr() && s.complete);
@@ -733,6 +777,10 @@ function App() {
     setTab("history");
     flash("Session logged ✓");
     doSync(session, st.name, "log");
+    if (merged.complete) setPrepPrompt({
+      studentId: merged.studentId,
+      value: st.learning || ""
+    });
   };
   const quickLog = sid => {
     const st = getStudent(sid);
@@ -748,6 +796,35 @@ function App() {
     persist([session, ...sessions].sort((a, b) => b.date.localeCompare(a.date)), null);
     flash("Logged ✓");
     doSync(session, st.name, "log");
+    setPrepPrompt({
+      studentId: sid,
+      value: st.learning || ""
+    });
+  };
+  const savePrepPrompt = () => {
+    if (!prepPrompt) return;
+    const u = students.map(st => st.id === prepPrompt.studentId ? {
+      ...st,
+      learning: prepPrompt.value
+    } : st);
+    persist(null, u);
+    setPrepPrompt(null);
+    flash("Prep updated ✓");
+  };
+  const markAllPaidForStudent = sid => {
+    const u = sessions.map(s => s.studentId === sid && s.complete && !s.paid ? {
+      ...s,
+      paid: true
+    } : s);
+    persist(u, null);
+    u.forEach(s => {
+      if (s.studentId === sid && s.paid) doSync(s, getStudent(sid).name, "update_paid");
+    });
+    flash("Marked all paid ✓");
+  };
+  const savePaymentNotes = v => {
+    setPaymentNotes(v);
+    store.set("tt-payment-notes", v);
   };
   const togglePaid = id => {
     const u = sessions.map(s => s.id === id ? {
@@ -1293,7 +1370,187 @@ function App() {
   }, "Save Changes"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setEditingSession(null),
     className: "btn btn-ghost"
-  }, "Cancel")))), /*#__PURE__*/React.createElement("div", {
+  }, "Cancel")))), viewingStudent && (() => {
+    const list = sessions.filter(s => s.studentId === viewingStudent.id).sort((a, b) => b.date.localeCompare(a.date));
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)",
+        zIndex: 500,
+        display: "flex",
+        alignItems: "flex-end"
+      },
+      onClick: () => setViewingStudent(null)
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "fade-up",
+      style: {
+        background: "var(--surface)",
+        borderRadius: "24px 24px 0 0",
+        padding: "24px",
+        width: "100%",
+        maxWidth: "600px",
+        margin: "0 auto",
+        maxHeight: "85vh",
+        overflowY: "auto"
+      },
+      onClick: e => e.stopPropagation()
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: "36px",
+        height: "4px",
+        background: "var(--border)",
+        borderRadius: "2px",
+        margin: "0 auto 20px"
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        marginBottom: "4px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: "12px",
+        height: "12px",
+        borderRadius: "50%",
+        background: viewingStudent.color
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 800,
+        fontSize: "18px"
+      }
+    }, viewingStudent.name)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        color: "var(--text3)",
+        fontSize: "13px",
+        marginBottom: "18px"
+      }
+    }, list.filter(s => s.complete).length, " sessions completed"), list.length === 0 ? /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        padding: "40px 20px",
+        color: "var(--text3)"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: "32px",
+        marginBottom: "10px"
+      }
+    }, "📋"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 600
+      }
+    }, "No sessions yet")) : /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px"
+      }
+    }, list.map(s => /*#__PURE__*/React.createElement("div", {
+      key: s.id,
+      style: {
+        background: "var(--bg)",
+        borderRadius: "var(--r-sm)",
+        padding: "12px 14px",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 700,
+        fontSize: "13px",
+        fontFamily: "'DM Mono',monospace"
+      }
+    }, fmtDate(s.date)), s.notes && s.notes !== "(imported)" && /*#__PURE__*/React.createElement("div", {
+      style: {
+        color: "var(--text2)",
+        fontSize: "13px",
+        marginTop: "3px",
+        fontStyle: "italic"
+      }
+    }, s.notes)), /*#__PURE__*/React.createElement("span", {
+      className: `badge ${s.complete ? "badge-green" : "badge-gray"}`
+    }, s.complete ? "✓" : "Pending"), s.complete && s.paid && /*#__PURE__*/React.createElement("span", {
+      className: "badge badge-blue",
+      style: {
+        cursor: "default"
+      }
+    }, "Paid")))), /*#__PURE__*/React.createElement("button", {
+      onClick: () => setViewingStudent(null),
+      className: "btn btn-ghost",
+      style: {
+        width: "100%",
+        marginTop: "16px"
+      }
+    }, "Close")));
+  })(), prepPrompt && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.5)",
+      zIndex: 600,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "16px"
+    },
+    onClick: () => setPrepPrompt(null)
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fade-up panel",
+    style: {
+      width: "100%",
+      maxWidth: "440px"
+    },
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 800,
+      fontSize: "17px",
+      marginBottom: "6px"
+    }
+  }, "📖 Prep for next time?"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--text3)",
+      fontSize: "13px",
+      marginBottom: "14px"
+    }
+  }, "What should you prepare before your next session with ", getStudent(prepPrompt.studentId).name, "?"), /*#__PURE__*/React.createElement("textarea", {
+    value: prepPrompt.value,
+    onChange: e => setPrepPrompt(p => ({
+      ...p,
+      value: e.target.value
+    })),
+    rows: 2,
+    placeholder: "e.g. Perek 4, next multiplication set…",
+    className: "inp",
+    style: {
+      resize: "vertical",
+      marginBottom: "14px"
+    },
+    autoFocus: true
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "8px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: savePrepPrompt,
+    className: "btn btn-primary",
+    style: {
+      flex: 1
+    }
+  }, "Save prep"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPrepPrompt(null),
+    className: "btn btn-ghost"
+  }, "Skip")))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: "16px"
     }
@@ -1372,13 +1629,13 @@ function App() {
     v: totalDone,
     c: "var(--primary)"
   }, {
-    l: "Collected",
-    v: `$${totalEarned}`,
+    l: "This Week",
+    v: thisWeekCount,
     c: "var(--green)"
   }, {
-    l: "Owed",
-    v: `$${totalOwed}`,
-    c: totalOwed > 0 ? "var(--red)" : "var(--green)"
+    l: "Students",
+    v: students.length,
+    c: "#8B5CF6"
   }].map(({
     l,
     v,
@@ -1454,9 +1711,11 @@ function App() {
     return /*#__PURE__*/React.createElement("div", {
       key: st.id,
       style: {
-        background: "rgba(255,255,255,0.15)",
-        borderRadius: "10px",
-        padding: "8px 14px"
+        background: "rgba(255,255,255,0.96)",
+        borderRadius: "12px",
+        padding: "10px 14px",
+        borderLeft: `5px solid ${st.color}`,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.12)"
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -1466,31 +1725,32 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        width: "8px",
-        height: "8px",
+        width: "10px",
+        height: "10px",
         borderRadius: "50%",
-        background: "white",
-        opacity: 0.8
+        background: st.color,
+        flexShrink: 0
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: "14px",
-        fontWeight: 700
+        fontWeight: 700,
+        color: "var(--text)"
       }
     }, st.name), done ? /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: "12px",
-        opacity: 0.9,
-        fontWeight: 600
+        fontWeight: 700,
+        color: "var(--green)"
       }
     }, "✓ Done") : /*#__PURE__*/React.createElement("button", {
       onClick: () => quickLog(st.id),
       style: {
-        background: "white",
+        background: st.color,
         border: "none",
         borderRadius: "8px",
-        padding: "4px 14px",
-        color: "var(--primary)",
+        padding: "5px 14px",
+        color: "white",
         fontWeight: 700,
         fontSize: "13px",
         cursor: "pointer"
@@ -1498,9 +1758,9 @@ function App() {
     }, "Mark Done")), st.learning && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: "12px",
-        opacity: 0.9,
+        color: "var(--text2)",
         marginTop: "6px",
-        paddingLeft: "16px",
+        paddingLeft: "18px",
         lineHeight: 1.4
       }
     }, "📖 Prep: ", st.learning));
@@ -1739,7 +1999,15 @@ function App() {
       marginBottom: "10px",
       paddingLeft: "2px"
     }
-  }, "Hold a session for 0.6s to edit it"), /*#__PURE__*/React.createElement("div", {
+  }, "Hold a session for 0.6s to edit it"), /*#__PURE__*/React.createElement("input", {
+    value: historySearch,
+    onChange: e => setHistorySearch(e.target.value),
+    placeholder: "🔍 Search notes or student…",
+    className: "inp",
+    style: {
+      marginBottom: "10px"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "8px",
@@ -1783,17 +2051,17 @@ function App() {
       fontSize: "36px",
       marginBottom: "12px"
     }
-  }, "📋"), /*#__PURE__*/React.createElement("div", {
+  }, historySearch || filterStudent !== "all" || filterPaid !== "all" ? "🔍" : "📋"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 600,
       fontSize: "15px"
     }
-  }, "No sessions yet"), /*#__PURE__*/React.createElement("div", {
+  }, historySearch || filterStudent !== "all" || filterPaid !== "all" ? "No matches" : "No sessions yet"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: "13px",
       marginTop: "4px"
     }
-  }, "Log your first session in the Log tab")) : /*#__PURE__*/React.createElement("div", {
+  }, historySearch || filterStudent !== "all" || filterPaid !== "all" ? "Try clearing the search or filters" : "Log your first session in the Log tab")) : /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -1807,7 +2075,196 @@ function App() {
     onToggleComplete: toggleComplete,
     onTogglePaid: togglePaid,
     onDelete: deleteSession
-  })))), tab === "students" && /*#__PURE__*/React.createElement("div", {
+  })))), tab === "payments" && /*#__PURE__*/React.createElement("div", {
+    className: "fade-up"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "10px",
+      marginBottom: "14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-card",
+    style: {
+      background: "var(--green-bg)",
+      border: "1px solid rgba(22,163,74,0.2)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-value",
+    style: {
+      color: "var(--green)"
+    }
+  }, "$", totalEarned), /*#__PURE__*/React.createElement("div", {
+    className: "stat-label",
+    style: {
+      color: "var(--green)"
+    }
+  }, "Collected")), /*#__PURE__*/React.createElement("div", {
+    className: "stat-card",
+    style: {
+      background: totalOwed > 0 ? "var(--amber-bg)" : "var(--bg)",
+      border: `1px solid ${totalOwed > 0 ? "rgba(217,119,6,0.2)" : "var(--border)"}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-value",
+    style: {
+      color: totalOwed > 0 ? "var(--amber)" : "var(--text3)"
+    }
+  }, "$", totalOwed), /*#__PURE__*/React.createElement("div", {
+    className: "stat-label",
+    style: {
+      color: totalOwed > 0 ? "var(--amber)" : "var(--text3)"
+    }
+  }, "Outstanding"))), /*#__PURE__*/React.createElement("div", {
+    className: "panel-title",
+    style: {
+      fontSize: "15px",
+      marginBottom: "10px"
+    }
+  }, "Unpaid sessions"), unpaidSessions.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: "40px 20px",
+      color: "var(--text3)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "32px",
+      marginBottom: "10px"
+    }
+  }, "✅"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 600,
+      fontSize: "15px"
+    }
+  }, "All caught up"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "13px",
+      marginTop: "4px"
+    }
+  }, "Nothing outstanding right now")) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px"
+    }
+  }, unpaidSessions.map(s => {
+    const st = getStudent(s.studentId);
+    return /*#__PURE__*/React.createElement("div", {
+      key: s.id,
+      className: "session-card"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "session-dot",
+      style: {
+        background: st.color
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: "110px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 700,
+        fontSize: "14px"
+      }
+    }, st.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        color: "var(--text3)",
+        fontSize: "12px",
+        marginTop: "1px",
+        fontFamily: "'DM Mono',monospace"
+      }
+    }, fmtShort(s.date), " · $", s.amount), s.notes && s.notes !== "(imported)" && /*#__PURE__*/React.createElement("div", {
+      style: {
+        color: "var(--text2)",
+        fontSize: "12px",
+        marginTop: "3px",
+        fontStyle: "italic"
+      }
+    }, s.notes)), /*#__PURE__*/React.createElement("button", {
+      onClick: () => togglePaid(s.id),
+      className: "btn btn-primary",
+      style: {
+        padding: "8px 16px",
+        fontSize: "13px"
+      }
+    }, "Mark paid"));
+  })), studentStats.some(st => st.owed > 0) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: "20px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "panel-title",
+    style: {
+      fontSize: "15px",
+      marginBottom: "10px"
+    }
+  }, "By student"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px"
+    }
+  }, studentStats.filter(st => st.owed > 0).map(st => /*#__PURE__*/React.createElement("div", {
+    key: st.id,
+    style: {
+      background: "var(--surface)",
+      border: "1px solid var(--border)",
+      borderRadius: "var(--r-sm)",
+      padding: "12px 16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      marginBottom: "10px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "10px",
+      height: "10px",
+      borderRadius: "50%",
+      background: st.color
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      flex: 1,
+      fontWeight: 700,
+      fontSize: "14px"
+    }
+  }, st.name), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: "13px",
+      color: "var(--text3)"
+    }
+  }, "$", st.earned, " paid"), /*#__PURE__*/React.createElement("span", {
+    className: "badge badge-amber"
+  }, "$", st.owed, " owed")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => markAllPaidForStudent(st.id),
+    className: "btn btn-ghost",
+    style: {
+      width: "100%",
+      padding: "7px",
+      fontSize: "13px"
+    }
+  }, "Mark all paid for ", st.name.split("·")[0].trim()))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: "20px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "📝 Payment notes"), /*#__PURE__*/React.createElement("textarea", {
+    value: paymentNotes,
+    onChange: e => savePaymentNotes(e.target.value),
+    rows: 3,
+    placeholder: "e.g. Avi pays end of month · gave a make-up session free…",
+    className: "inp",
+    style: {
+      resize: "vertical"
+    }
+  }))), tab === "students" && /*#__PURE__*/React.createElement("div", {
     className: "fade-up",
     style: {
       display: "flex",
@@ -2014,29 +2471,13 @@ function App() {
     }
   }, "Delete"))), /*#__PURE__*/React.createElement("div", {
     style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(3,1fr)",
-      gap: "8px"
+      display: "flex",
+      gap: "8px",
+      marginBottom: "12px"
     }
-  }, [{
-    l: "Sessions",
-    v: st.count,
-    c: st.color
-  }, {
-    l: "Collected",
-    v: `$${st.earned}`,
-    c: "var(--green)"
-  }, {
-    l: "Owed",
-    v: `$${st.owed}`,
-    c: st.owed > 0 ? "var(--red)" : "var(--green)"
-  }].map(({
-    l,
-    v,
-    c
-  }) => /*#__PURE__*/React.createElement("div", {
-    key: l,
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
+      flex: 1,
       background: "var(--bg)",
       borderRadius: "10px",
       padding: "12px",
@@ -2046,16 +2487,78 @@ function App() {
     style: {
       fontSize: "20px",
       fontWeight: 800,
-      color: c
+      color: st.color
     }
-  }, v), /*#__PURE__*/React.createElement("div", {
+  }, st.count), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: "11px",
       color: "var(--text3)",
       marginTop: "2px",
       fontWeight: 600
     }
-  }, l))))))), showAddStudent ? /*#__PURE__*/React.createElement("div", {
+  }, "Completed")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      background: "var(--bg)",
+      borderRadius: "10px",
+      padding: "12px",
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "20px",
+      fontWeight: 800,
+      color: "var(--green)"
+    }
+  }, st.thisWeek), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "11px",
+      color: "var(--text3)",
+      marginTop: "2px",
+      fontWeight: 600
+    }
+  }, "This week")), st.owed > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      background: "var(--amber-bg)",
+      borderRadius: "10px",
+      padding: "12px",
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "20px",
+      fontWeight: 800,
+      color: "var(--amber)"
+    }
+  }, "$", st.owed), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "11px",
+      color: "var(--amber)",
+      marginTop: "2px",
+      fontWeight: 600
+    }
+  }, "Owed"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      justifyContent: "space-between"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "12px",
+      color: st.lastDays != null && st.lastDays > 10 ? "var(--amber)" : "var(--text3)",
+      fontWeight: 600
+    }
+  }, st.lastSession ? `Last session: ${st.lastDays === 0 ? "today" : st.lastDays === 1 ? "yesterday" : st.lastDays + " days ago"}` : "No sessions yet"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setViewingStudent(st),
+    className: "btn btn-ghost",
+    style: {
+      padding: "6px 14px",
+      fontSize: "13px"
+    }
+  }, "📋 History"))))), showAddStudent ? /*#__PURE__*/React.createElement("div", {
     className: "student-card"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -2192,7 +2695,7 @@ function App() {
     }
   }), /*#__PURE__*/React.createElement("nav", {
     className: "bottom-nav"
-  }, [["log", "➕", "Log"], ["history", "📋", "History"], ["students", "👥", "Students"]].map(([t, icon, l]) => /*#__PURE__*/React.createElement("button", {
+  }, [["log", "➕", "Log"], ["history", "📋", "History"], ["payments", "💵", "Payments"], ["students", "👥", "Students"]].map(([t, icon, l]) => /*#__PURE__*/React.createElement("button", {
     key: t,
     onClick: () => setTab(t),
     className: `nav-btn${tab === t ? " active" : ""}`

@@ -264,13 +264,15 @@ const DEFAULT_STUDENTS = [{
   name: "Student 1",
   color: "#4F6BED",
   scheduledDays: [],
-  rate: 30
+  rate: 30,
+  learning: ""
 }, {
   id: "s2",
   name: "Student 2",
   color: "#E05A2B",
   scheduledDays: [],
-  rate: 30
+  rate: 30,
+  learning: ""
 }];
 const genId = () => typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
 const store = {
@@ -535,7 +537,8 @@ function App() {
     name: "",
     rate: 30,
     color: COLORS[0],
-    scheduledDays: []
+    scheduledDays: [],
+    learning: ""
   });
   const [filterStudent, setFilterStudent] = useState("all");
   const [filterPaid, setFilterPaid] = useState("all");
@@ -807,14 +810,16 @@ function App() {
       name: newStudent.name.trim(),
       color: newStudent.color,
       rate: Number(newStudent.rate) || 30,
-      scheduledDays: newStudent.scheduledDays
+      scheduledDays: newStudent.scheduledDays,
+      learning: newStudent.learning || ""
     };
     persist(null, [...students, ns]);
     setNewStudent({
       name: "",
       rate: 30,
       color: COLORS[0],
-      scheduledDays: []
+      scheduledDays: [],
+      learning: ""
     });
     setShowAddStudent(false);
     flash("Student added ✓");
@@ -1449,12 +1454,15 @@ function App() {
     return /*#__PURE__*/React.createElement("div", {
       key: st.id,
       style: {
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
         background: "rgba(255,255,255,0.15)",
         borderRadius: "10px",
         padding: "8px 14px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: "8px"
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -1487,7 +1495,15 @@ function App() {
         fontSize: "13px",
         cursor: "pointer"
       }
-    }, "Mark Done"));
+    }, "Mark Done")), st.learning && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: "12px",
+        opacity: 0.9,
+        marginTop: "6px",
+        paddingLeft: "16px",
+        lineHeight: 1.4
+      }
+    }, "📖 Prep: ", st.learning));
   })))), showExport && /*#__PURE__*/React.createElement("div", {
     className: "panel fade-up",
     style: {
@@ -1649,7 +1665,18 @@ function App() {
       opacity: 0.7,
       fontSize: "12px"
     }
-  }, "$", st.rate))))), /*#__PURE__*/React.createElement("div", {
+  }, "$", st.rate)))), getStudent(form.studentId).learning && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: "10px",
+      background: "var(--primary-bg)",
+      borderRadius: "var(--r-xs)",
+      padding: "10px 14px",
+      fontSize: "13px",
+      color: "var(--primary)",
+      fontWeight: 600,
+      lineHeight: 1.4
+    }
+  }, "📖 Prep: ", getStudent(form.studentId).learning)), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: "14px"
     }
@@ -1833,6 +1860,24 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "section-label"
+  }, "Learning / Prep for next session"), /*#__PURE__*/React.createElement("textarea", {
+    value: editingStudent.learning || "",
+    onChange: e => setEditingStudent(s => ({
+      ...s,
+      learning: e.target.value
+    })),
+    placeholder: "e.g. review Perek 3, prep multiplication worksheet…",
+    rows: 2,
+    className: "inp",
+    style: {
+      resize: "vertical"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
   }, "Color"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -1937,7 +1982,15 @@ function App() {
       fontSize: "12px",
       marginTop: "1px"
     }
-  }, "$", st.rate, "/session", st.scheduledDays?.length > 0 ? ` · ${st.scheduledDays.map(d => DAY_NAMES[d]).join(", ")}` : ""))), /*#__PURE__*/React.createElement("div", {
+  }, "$", st.rate, "/session", st.scheduledDays?.length > 0 ? ` · ${st.scheduledDays.map(d => DAY_NAMES[d]).join(", ")}` : ""), st.learning && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "var(--primary)",
+      fontSize: "12px",
+      marginTop: "4px",
+      fontWeight: 600,
+      lineHeight: 1.4
+    }
+  }, "📖 ", st.learning))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: "6px",
@@ -2040,6 +2093,24 @@ function App() {
     className: "inp",
     style: {
       width: "120px"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "section-label"
+  }, "Learning / Prep for next session"), /*#__PURE__*/React.createElement("textarea", {
+    value: newStudent.learning || "",
+    onChange: e => setNewStudent(s => ({
+      ...s,
+      learning: e.target.value
+    })),
+    placeholder: "e.g. review Perek 3, prep multiplication worksheet…",
+    rows: 2,
+    className: "inp",
+    style: {
+      resize: "vertical"
     }
   })), /*#__PURE__*/React.createElement("div", {
     style: {
